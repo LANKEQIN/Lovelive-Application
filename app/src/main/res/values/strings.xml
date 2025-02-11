@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Dreamy Color</string>
+    <string name="splash_text">奇迹的颜色</string>
+    <string name="navigation_exclusive">专属</string>
+    <string name="navigation_inspiration">灵感</string>
+    <string name="navigation_encyclopedia">百科</string>
+    <string name="navigation_profile">我的</string>
+    <string name="theme_follow_system">跟随系统</string>
+    <string name="theme_light">浅色模式</string>
+    <string name="theme_dark">深色模式</string>
+</resources>
