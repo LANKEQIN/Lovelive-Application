@@ -47,6 +47,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 
+
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
     override fun onCreate(savedInstanceState: Bundle?) {

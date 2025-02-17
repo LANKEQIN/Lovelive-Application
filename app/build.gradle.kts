@@ -7,7 +7,7 @@ plugins {
 fun generateVersionCode(): Int {
     val year = 2025 // 年份
     val month = 2  // 月份
-    val day = 12    // 日期
+    val day = 17    // 日期
     return year * 10000 + month * 100 + day
 }
 
@@ -20,13 +20,19 @@ android {
         minSdk = 23
         targetSdk = 35
         versionCode = generateVersionCode()
-        versionName = "0.0.1"
+        versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        ndk {
-            abiFilters.addAll(arrayOf("arm64-v8a","x86_64","x86"))
-        }
     }
 
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
