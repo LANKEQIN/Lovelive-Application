@@ -48,6 +48,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.core.view.WindowCompat
+import androidx.compose.foundation.isSystemInDarkTheme
 
 
 class MainActivity : ComponentActivity() {
@@ -55,8 +57,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             val themeMode by settingsManager.themeModeFlow.collectAsState(initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM)
+            val isDarkTheme = when (themeMode) {
+                SettingsManager.ThemeMode.LIGHT -> false
+                SettingsManager.ThemeMode.DARK -> true
+                else -> isSystemInDarkTheme()
+            }
+
+            // 动态设置状态栏文字颜色
+            LaunchedEffect(isDarkTheme) {
+                val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+                windowInsetsController.isAppearanceLightStatusBars = !isDarkTheme
+            }
 
             DreamyColorTheme(
                 themeMode = themeMode,
