@@ -46,6 +46,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 
 
 class MainActivity : ComponentActivity() {
@@ -62,13 +64,19 @@ class MainActivity : ComponentActivity() {
                 // 状态控制启动页显示
                 var showSplash by remember { mutableStateOf(true) }
 
-                if (showSplash) {
-                    SplashScreen(
-                        onTimeout = { showSplash = false },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    MainContent(settingsManager)
+                // 用 Crossfade 包裹 SplashScreen 和主界面，实现淡入淡出动画：
+                Crossfade(
+                    targetState = showSplash,
+                    animationSpec = tween(800)
+                ) { isSplash ->
+                    if (isSplash) {
+                        SplashScreen(
+                            onTimeout = { showSplash = false },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        MainContent(settingsManager)
+                    }
                 }
             }
         }
