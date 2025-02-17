@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
                 // 状态控制启动页显示
                 var showSplash by remember { mutableStateOf(true) }
 
-                // 用 Crossfade 包裹 SplashScreen 和主界面，实现淡入淡出动画：
+                // 实现淡入淡出动画：
                 Crossfade(
                     targetState = showSplash,
                     animationSpec = tween(800)
@@ -199,8 +199,6 @@ fun MainContent(settingsManager: SettingsManager) {
 @Composable
 fun ExclusiveScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 30.sp)
-        Text(text = stringResource(R.string.navigation_exclusive), style = textStyle)
     }
 }
 
@@ -215,8 +213,6 @@ fun InspirationScreen() {
 @Composable
 fun EncyclopediaScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 30.sp)
-        Text(text = stringResource(R.string.navigation_encyclopedia), style = textStyle)
     }
 }
 
