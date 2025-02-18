@@ -26,12 +26,8 @@ import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
 import kotlinx.coroutines.delay
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Box
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -52,7 +48,6 @@ import androidx.core.view.WindowCompat
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.lovelive.dreamycolor.database.EncyclopediaDatabase
 import com.lovelive.dreamycolor.model.CharacterCard
-import androidx.compose.material3.Divider
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,6 +55,9 @@ import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModel
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
 
 
 class MainActivity : ComponentActivity() {
@@ -140,23 +138,34 @@ fun SplashScreen(
 }
 
 // 主界面内容
+// 修改后的 MainContent 函数
 @Composable
 fun MainContent(settingsManager: SettingsManager) {
-    val navController = rememberNavController()
+    //val navController = rememberNavController() // 注释掉
     val items = listOf(
         Screen.Exclusive,
         Screen.Inspiration,
         Screen.Encyclopedia,
         Screen.Profile
     )
+    // 使用 rememberPagerState 来记住页面状态
+    val pagerState = rememberPagerState(
+        initialPage = 0,
+        initialPageOffsetFraction = 0f
+    ) {
+        // provide pageCount
+        items.size
+    }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
             NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = navBackStackEntry?.destination?.route
+                //val navBackStackEntry by navController.currentBackStackEntryAsState() // 注释
+                //val currentRoute = navBackStackEntry?.destination?.route //注释
 
-                items.forEach { screen ->
+                items.forEachIndexed { index, screen ->
                     NavigationBarItem(
                         icon = {}, // 不要图标
                         label = {
@@ -175,11 +184,11 @@ fun MainContent(settingsManager: SettingsManager) {
                                 }
                             )
                         },
-                        selected = currentRoute == screen.route,
+                        selected = pagerState.currentPage == index,
                         onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.startDestinationId)
-                                launchSingleTop = true
+
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
                             }
                         }
                     )
@@ -187,25 +196,29 @@ fun MainContent(settingsManager: SettingsManager) {
             }
         }
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Exclusive.route,
+        // 使用 HorizontalPager 替换 NavHost
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Exclusive.route) {
-                ExclusiveScreen()
-            }
-            composable(Screen.Inspiration.route) {
-                InspirationScreen()
-            }
-            composable(Screen.Encyclopedia.route) {
-                EncyclopediaScreen()
-            }
-            composable(Screen.Profile.route) {
-                ProfileScreen(settingsManager)
+        ) { page ->
+            // 根据页面索引显示不同的内容
+            when (page) {
+                0 -> ExclusiveScreen()
+                1 -> InspirationScreen()
+                2 -> EncyclopediaScreen()
+                3 -> ProfileScreen(settingsManager)
             }
         }
     }
+    //    LaunchedEffect(pagerState.currentPage) { //注释掉
+    //        // 根据 pagerState.currentPage 更新导航的选中状态
+    //        when (pagerState.currentPage) {
+    //            0 -> navController.navigate(Screen.Exclusive.route)
+    //            1 -> navController.navigate(Screen.Inspiration.route)
+    //            2 -> navController.navigate(Screen.Encyclopedia.route)
+    //            3 -> navController.navigate(Screen.Profile.route)
+    //        }
+    //    }
 }
 
 @Composable
@@ -282,14 +295,12 @@ fun CharacterCardUI(character: CharacterCard) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary
             )
-            Divider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp) // 使用 Divider 并设置颜色和厚度
+            androidx.compose.material3.HorizontalDivider(
+                color = MaterialTheme.colorScheme.outline,
+                thickness = 1.dp
+            )
             Text("生日：${character.birthday}")
             Text(character.description)
-            // 如果要加载本地图片：
-            /* Image(
-                painter = painterResource(id = character.imageRes),
-                contentDescription = "角色图片"
-            ) */
         }
     }
 }
@@ -367,13 +378,3 @@ fun ThemeSelectionDialog(
         }
     )
 }
-
-
-
-
-
-
-
-
-
-

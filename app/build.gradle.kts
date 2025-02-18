@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.viewpager2)
     ksp (libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
