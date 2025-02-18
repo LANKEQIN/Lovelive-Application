@@ -47,7 +47,6 @@ import androidx.compose.animation.core.tween
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.isSystemInDarkTheme
 import com.lovelive.dreamycolor.database.EncyclopediaDatabase
-import com.lovelive.dreamycolor.model.CharacterCard
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Card
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,6 +65,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import android.app.Application
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import com.lovelive.dreamycolor.model.CharacterCard
 
 
 class MainActivity : ComponentActivity() {
@@ -246,12 +257,9 @@ fun InspirationScreen() {
 @Composable
 fun EncyclopediaScreen() {
     val context = LocalContext.current
-    // 获取数据库实例
     val database = remember { EncyclopediaDatabase.getDatabase(context) }
-    // 创建 Repository 实例
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
 
-    // 使用自定义 factory 创建 ViewModel
     val viewModel: EncyclopediaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -264,33 +272,51 @@ fun EncyclopediaScreen() {
         }
     )
 
-    // 监听数据库中角色数据流
     val characters by viewModel.allCharacters.collectAsState(initial = emptyList())
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 刷新按钮区域
-        Button(
-            onClick = { viewModel.refreshData(context) },
+        // 标题和刷新按钮
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "刷新数据")
+            Text(
+                text = "角色百科",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Button(
+                onClick = { viewModel.refreshData(context) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Text("刷新数据")
+            }
         }
-
-        // 数据列表展示
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .weight(1f) // 添加这一行确保高度约束正确
         ) {
-            items(characters) { character ->
-                CharacterCardUI(character = character)
-                Spacer(modifier = Modifier.height(16.dp))
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(characters.size, key = { index -> characters[index].name }) { index ->
+                    CharacterCardUI(character = characters[index])
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun CharacterCardUI(character: CharacterCard) {
@@ -298,44 +324,116 @@ fun CharacterCardUI(character: CharacterCard) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { /* 点击进入详情 */ },
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = character.name, style = MaterialTheme.typography.headlineSmall)
-            Text(text = character.japaneseName, style = MaterialTheme.typography.bodySmall)
-
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
-
-            // 示例布局：两列展示生日、身高、年级、血型等信息
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                InfoItem("生日", character.birthday)
-                InfoItem("身高", "${character.height}cm")
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // 姓名部分
+            Column {
+                Text(
+                    text = character.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = character.japaneseName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 信息网格
+            GridLayout(
+                listOf(
+                    "生日" to character.birthday,
+                    "年级" to character.schoolYear,
+                    "身高" to "${character.height}cm"
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 角色描述
+            Text(
+                text = character.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                lineHeight = 18.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun GridLayout(items: List<Pair<String, String>>) {
+    val chunkedItems = items.chunked(2) // 添加这一行以初始化 chunkedItems
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        for (rowItems in chunkedItems) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                InfoItem("年级", character.schoolYear)
+                for ((label, value) in rowItems) {
+                    InfoItem(
+                        label = label,
+                        value = value,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                // 如果不足两项，填充一个空 Box 以维持平衡布局
+                if (rowItems.size < 2) {
+                    Box(modifier = Modifier.weight(1f))
+                }
             }
         }
     }
 }
 
 @Composable
-private fun InfoItem(label: String, value: String) {
-    // 将 Column 放在 Row 中使用 weight
-    Row {
-        Column(
-            modifier = Modifier
-                .weight(1f) // 现在可以正常使用 weight
-                .padding(horizontal = 8.dp)
-        ) {
-            Text(text = label, style = MaterialTheme.typography.labelSmall)
-            Text(text = value, style = MaterialTheme.typography.bodyMedium)
-        }
+private fun InfoItem(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = MaterialTheme.shapes.small
+            )
+            .padding(8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -382,8 +480,8 @@ fun ThemeSelectionDialog(
         title = { Text("选择主题") },
         text = {
             Column {
-                // 使用 Enum.entries 替换 Enum.values()
-                SettingsManager.ThemeMode.entries.forEach { mode ->
+                // 用 for 循环替代 forEach
+                for (mode in SettingsManager.ThemeMode.entries) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
