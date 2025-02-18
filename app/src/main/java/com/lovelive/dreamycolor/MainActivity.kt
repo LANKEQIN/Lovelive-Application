@@ -50,6 +50,16 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.isSystemInDarkTheme
+import com.lovelive.dreamycolor.database.EncyclopediaDatabase
+import com.lovelive.dreamycolor.model.CharacterCard
+import androidx.compose.material3.Divider
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Card
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -89,7 +99,9 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        MainContent(settingsManager)
+                        MainContent(
+                            settingsManager = settingsManager
+                        )
                     }
                 }
             }
@@ -212,7 +224,73 @@ fun InspirationScreen() {
 
 @Composable
 fun EncyclopediaScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    val context = LocalContext.current
+    val database = remember { EncyclopediaDatabase.getDatabase(context) }
+
+    // 使用 viewModel() 函数并传递 factory 参数
+    val viewModel: EncyclopediaViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(EncyclopediaViewModel::class.java)) {
+                    return EncyclopediaViewModel(database.encyclopediaDao()) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    )
+
+    // 使用 Flow 接收数据
+    val character by viewModel.getCharacter("高坂穗乃果").collectAsState(initial = null)
+
+    LaunchedEffect(Unit) {
+        viewModel.addTestData() // 初始化测试数据
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        character?.let {
+            CharacterCardUI(character = it)
+        } ?: Text("加载中...")
+    }
+}
+
+@Composable
+fun CharacterCardUI(character: CharacterCard) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* 点击效果 */ },
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = character.name,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = character.japaneseName,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Divider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp) // 使用 Divider 并设置颜色和厚度
+            Text("生日：${character.birthday}")
+            Text(character.description)
+            // 如果要加载本地图片：
+            /* Image(
+                painter = painterResource(id = character.imageRes),
+                contentDescription = "角色图片"
+            ) */
+        }
     }
 }
 
