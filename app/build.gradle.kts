@@ -8,7 +8,7 @@ plugins {
 fun generateVersionCode(): Int {
     val year = 2025 // 年份
     val month = 2  // 月份
-    val day = 17    // 日期
+    val day = 18    // 日期
     return year * 10000 + month * 100 + day
 }
 
