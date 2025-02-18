@@ -14,6 +14,10 @@ datastore = "1.1.2"
 datastore-preferences = "1.1.2"
 room = "2.6.1"
 androidx-viewpager2 = "1.1.0"
+gson = "2.10.1"
+paging = "3.3.6"
+androidx-paging = "3.3.6"
+coil = "2.7.0"
 
 [libraries]
 # ──────────────── 基础依赖 ────────────────
@@ -40,6 +44,8 @@ androidx-datastore-preferences = { group = "androidx.datastore", name = "datasto
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 #──────────────── UI相关 ────────────────
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
@@ -49,6 +55,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "compose" }
 androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "androidx-viewpager2" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
 
 
 [plugins]

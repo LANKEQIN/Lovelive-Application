@@ -9,7 +9,7 @@ import com.lovelive.dreamycolor.model.CharacterCard
 
 @Database(
     entities = [CharacterCard::class],
-    version = 1,    // 每次修改数据库结构需递增
+    version = 2,    // 每次修改数据库结构需递增
     exportSchema = false
 )
 abstract class EncyclopediaDatabase : RoomDatabase() {

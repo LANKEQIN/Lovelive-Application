@@ -58,6 +58,14 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lovelive.dreamycolor.data.repository.EncyclopediaRepository
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Divider
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.HorizontalDivider
+import android.app.Application
 
 
 class MainActivity : ComponentActivity() {
@@ -238,37 +246,49 @@ fun InspirationScreen() {
 @Composable
 fun EncyclopediaScreen() {
     val context = LocalContext.current
+    // 获取数据库实例
     val database = remember { EncyclopediaDatabase.getDatabase(context) }
+    // 创建 Repository 实例
+    val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
 
-    // 使用 viewModel() 函数并传递 factory 参数
+    // 使用自定义 factory 创建 ViewModel
     val viewModel: EncyclopediaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                if (modelClass.isAssignableFrom(EncyclopediaViewModel::class.java)) {
-                    return EncyclopediaViewModel(database.encyclopediaDao()) as T
-                }
-                throw IllegalArgumentException("Unknown ViewModel class")
+                return EncyclopediaViewModel(
+                    context.applicationContext as Application,
+                    repository
+                ) as T
             }
         }
     )
 
-    // 使用 Flow 接收数据
-    val character by viewModel.getCharacter("高坂穗乃果").collectAsState(initial = null)
+    // 监听数据库中角色数据流
+    val characters by viewModel.allCharacters.collectAsState(initial = emptyList())
 
-    LaunchedEffect(Unit) {
-        viewModel.addTestData() // 初始化测试数据
-    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 刷新按钮区域
+        Button(
+            onClick = { viewModel.refreshData(context) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(text = "刷新数据")
+        }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        character?.let {
-            CharacterCardUI(character = it)
-        } ?: Text("加载中...")
+        // 数据列表展示
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+        ) {
+            items(characters) { character ->
+                CharacterCardUI(character = character)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
     }
 }
 
@@ -277,33 +297,48 @@ fun CharacterCardUI(character: CharacterCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* 点击效果 */ },
-        shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .clickable { /* 点击进入详情 */ },
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = character.name,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = character.japaneseName,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            androidx.compose.material3.HorizontalDivider(
-                color = MaterialTheme.colorScheme.outline,
-                thickness = 1.dp
-            )
-            Text("生日：${character.birthday}")
-            Text(character.description)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = character.name, style = MaterialTheme.typography.headlineSmall)
+            Text(text = character.japaneseName, style = MaterialTheme.typography.bodySmall)
+
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // 示例布局：两列展示生日、身高、年级、血型等信息
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                InfoItem("生日", character.birthday)
+                InfoItem("身高", "${character.height}cm")
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                InfoItem("年级", character.schoolYear)
+            }
         }
     }
 }
+
+@Composable
+private fun InfoItem(label: String, value: String) {
+    // 将 Column 放在 Row 中使用 weight
+    Row {
+        Column(
+            modifier = Modifier
+                .weight(1f) // 现在可以正常使用 weight
+                .padding(horizontal = 8.dp)
+        ) {
+            Text(text = label, style = MaterialTheme.typography.labelSmall)
+            Text(text = value, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
 
 @Composable
 fun ProfileScreen(settingsManager: SettingsManager) {

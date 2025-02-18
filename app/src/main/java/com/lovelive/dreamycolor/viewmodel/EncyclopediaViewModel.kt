@@ -1,28 +1,39 @@
 package com.lovelive.dreamycolor.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.lovelive.dreamycolor.database.dao.EncyclopediaDao
-import com.lovelive.dreamycolor.model.CharacterCard
-import kotlinx.coroutines.flow.Flow
+import com.lovelive.dreamycolor.data.repository.EncyclopediaRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class EncyclopediaViewModel(private val dao: EncyclopediaDao) : ViewModel() {
+class EncyclopediaViewModel(
+    application: Application,
+    private val repository: EncyclopediaRepository
+) : AndroidViewModel(application) {
+    // 获取所有角色数据
+    val allCharacters = repository.getAllCharacters()
 
-    // 修改为 Flow 以便观察数据变化
-    fun getCharacter(name: String): Flow<CharacterCard?> = dao.getCharacterByName(name)
-
-    // 插入测试数据
-    fun addTestData() {
+    init {
         viewModelScope.launch {
-            val sampleCharacter = CharacterCard(
-                name = "高坂穗乃果",
-                japaneseName = "高坂 穂乃果",
-                birthday = "8月3日",
-                description = "音乃木坂学院校园偶像团体μ's的发起人兼队长，热情开朗的元气少女。",
-                imageRes = ""
-            )
-            dao.insertCharacter(sampleCharacter)
+            if (shouldInitializeData()) {
+                repository.initializeFromAssets(getApplication<Application>().applicationContext)
+            }
+        }
+    }
+
+    private suspend fun shouldInitializeData(): Boolean {
+        return repository.getAllCharacters().first().isEmpty()
+    }
+
+    // 获取单个角色（原有功能）
+    fun getCharacter(name: String) = repository.getCharacter(name)
+
+    // 新增：手动刷新数据方法，供 UI 层调用
+    fun refreshData(context: Context) {
+        viewModelScope.launch {
+            repository.refreshData(context)
         }
     }
 }
