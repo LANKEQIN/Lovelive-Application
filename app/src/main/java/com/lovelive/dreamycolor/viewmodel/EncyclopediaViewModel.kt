@@ -12,112 +12,79 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import android.content.Context
 
 class EncyclopediaViewModel(
     application: Application,
     private val repository: EncyclopediaRepository
 ) : AndroidViewModel(application) {
 
-    // 角色数据流
+    sealed class DataState {
+        data object Initial : DataState()
+        data object Loading : DataState()
+        data object Success : DataState()
+        data class Error(val message: String) : DataState()
+    }
+
+    private val _dataState = MutableStateFlow<DataState>(DataState.Initial)
+    val dataState: StateFlow<DataState> = _dataState
+
     val allCharacters: Flow<List<CharacterCard>> = repository.getAllCharacters()
         .catch { e ->
-            Log.e("ViewModel", "Error collecting characters: ${e.message}")
+            Log.e("ViewModel", "获取角色数据失败: ${e.message}")
             emit(emptyList())
         }
 
-    // 声优数据流
     val allVoiceActors: Flow<List<VoiceActorCard>> = repository.getAllVoiceActors()
         .catch { e ->
-            Log.e("ViewModel", "Error collecting voice actors: ${e.message}")
+            Log.e("ViewModel", "获取声优数据失败: ${e.message}")
             emit(emptyList())
         }
 
-    // 加载状态
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
-
-    // 错误状态
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error
-
     init {
-        Log.d("ViewModel", "ViewModel initialized")
+        Log.d("ViewModel", "ViewModel初始化")
         initializeData(getApplication())
     }
 
-    // 初始化数据
-    fun initializeData(context: android.content.Context) {
+    private fun initializeData(context: Context) {
         viewModelScope.launch {
             try {
-                _isLoading.value = true
+                _dataState.value = DataState.Loading
                 repository.initializeFromAssets(context)
-                repository.initializeVoiceActorsFromAssets(context)
-                Log.d("ViewModel", "Data initialization completed")
+                _dataState.value = DataState.Success
+                Log.d("ViewModel", "数据初始化成功")
             } catch (e: Exception) {
-                Log.e("ViewModel", "Error initializing data: ${e.message}")
-                _error.value = "数据初始化失败: ${e.message}"
-            } finally {
-                _isLoading.value = false
+                Log.e("ViewModel", "数据初始化失败: ${e.message}")
+                _dataState.value = DataState.Error(e.message ?: "未知错误")
             }
         }
     }
 
-    // 刷新数据
-    fun refreshData(context: android.content.Context) {
+    fun refreshData(context: Context) {
         viewModelScope.launch {
             try {
-                _isLoading.value = true
-                _error.value = null
-
-                // 刷新角色数据
+                _dataState.value = DataState.Loading
                 repository.refreshData(context)
-                Log.d("ViewModel", "Character data refreshed")
-
-                // 刷新声优数据
-                repository.initializeVoiceActorsFromAssets(context)
-                Log.d("ViewModel", "Voice actor data refreshed")
+                _dataState.value = DataState.Success
+                Log.d("ViewModel", "数据刷新成功")
             } catch (e: Exception) {
-                Log.e("ViewModel", "Error refreshing data: ${e.message}")
-                _error.value = "数据刷新失败: ${e.message}"
-            } finally {
-                _isLoading.value = false
+                Log.e("ViewModel", "数据刷新失败: ${e.message}")
+                _dataState.value = DataState.Error(e.message ?: "刷新失败")
             }
         }
     }
 
-    // 获取单个角色数据
     fun getCharacter(name: String): Flow<CharacterCard?> {
         return repository.getCharacter(name)
             .catch { e ->
-                Log.e("ViewModel", "Error getting character: ${e.message}")
+                Log.e("ViewModel", "获取角色失败: ${e.message}")
                 emit(null)
             }
     }
 
-    // 清理资源
     override fun onCleared() {
         super.onCleared()
-        Log.d("ViewModel", "ViewModel cleared")
-    }
-
-    // 错误处理
-    fun clearError() {
-        _error.value = null
-    }
-
-    // 用于调试的数据验证
-    fun validateData() {
-        viewModelScope.launch {
-            try {
-                allCharacters.collect { characters ->
-                    Log.d("ViewModel", "Characters count: ${characters.size}")
-                }
-                allVoiceActors.collect { voiceActors ->
-                    Log.d("ViewModel", "Voice actors count: ${voiceActors.size}")
-                }
-            } catch (e: Exception) {
-                Log.e("ViewModel", "Error validating data: ${e.message}")
-            }
-        }
+        Log.d("ViewModel", "ViewModel已清理")
     }
 }
+

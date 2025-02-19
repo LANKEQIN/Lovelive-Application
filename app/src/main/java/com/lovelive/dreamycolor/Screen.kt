@@ -1,11 +1,9 @@
 package com.lovelive.dreamycolor
 
-import androidx.compose.ui.res.stringResource
-import com.lovelive.dreamycolor.R
 
-sealed class Screen(val route: String, val titleRes: Int) {
-    object Exclusive : Screen("exclusive", R.string.navigation_exclusive)
-    object Inspiration : Screen("inspiration", R.string.navigation_inspiration)
-    object Encyclopedia : Screen("encyclopedia", R.string.navigation_encyclopedia)
-    object Profile : Screen("profile", R.string.navigation_profile)
+sealed class Screen(val titleRes: Int) {
+    data object Exclusive : Screen(R.string.navigation_exclusive)
+    data object Inspiration : Screen(R.string.navigation_inspiration)
+    data object Encyclopedia : Screen(R.string.navigation_encyclopedia)
+    data object Profile : Screen(R.string.navigation_profile)
 }

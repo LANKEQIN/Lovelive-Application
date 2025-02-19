@@ -1,3 +1,4 @@
+// EncyclopediaDao.kt
 package com.lovelive.dreamycolor.database.dao
 
 import androidx.room.Dao
@@ -31,7 +32,11 @@ interface EncyclopediaDao {
     @Query("DELETE FROM character_cards")
     suspend fun deleteAllCharacters()
 
+    // 获取所有声优数据
     @Query("SELECT * FROM voice_actor_cards")
     fun getAllVoiceActors(): Flow<List<VoiceActorCard>>
 
+    // 新增：删除所有声优记录，用于刷新数据时先清空表中的数据
+    @Query("DELETE FROM voice_actor_cards")
+    suspend fun deleteAllVoiceActors()
 }

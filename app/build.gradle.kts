@@ -5,10 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-fun generateVersionCode(): Int {
-    val year = 2025 // 年份
-    val month = 2  // 月份
-    val day = 18    // 日期
+fun generateVersionCode(year: Int, month: Int, day: Int): Int {
     return year * 10000 + month * 100 + day
 }
 
@@ -20,12 +17,26 @@ android {
         applicationId = "com.lovelive.dreamycolor"
         minSdk = 23
         targetSdk = 35
-        versionCode = generateVersionCode()
-        versionName = "0.1"
+        versionCode = generateVersionCode(2025, 2, 18)
+        versionName = "1.0"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments.putAll(
+                    mapOf(
+                        // 直接设置默认值
+                        "room.schemaLocation" to "$projectDir/schemas",
+                        "room.incremental" to "true"
+                    )
+                )
+            }
+        }
+
         ndk {
             // 只支持 arm64-v8a 和 x86_64
-            abiFilters += setOf("arm64-v8a","x86_64","x86")
+            abiFilters += setOf("arm64-v8a", "x86_64", "x86")
         }
     }
 

@@ -58,33 +58,16 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lovelive.dreamycolor.data.repository.EncyclopediaRepository
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Divider
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import android.app.Application
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import com.lovelive.dreamycolor.model.CharacterCard
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lovelive.dreamycolor.model.VoiceActorCard
-
 
 
 class MainActivity : ComponentActivity() {
@@ -134,7 +117,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// 启动页组件
 @Composable
 fun SplashScreen(
     onTimeout: () -> Unit,
@@ -271,7 +253,6 @@ fun EncyclopediaScreen() {
     // 在进入该页面时初始化角色和声优数据（仅在数据为空时加载 JSON 数据）
     LaunchedEffect(Unit) {
         repository.initializeFromAssets(context)
-        repository.initializeVoiceActorsFromAssets(context)
     }
 
     val viewModel: EncyclopediaViewModel = viewModel(
