@@ -23,6 +23,10 @@ android {
         versionCode = generateVersionCode()
         versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            // 只支持 arm64-v8a 和 x86_64
+            abiFilters += setOf("arm64-v8a","x86_64","x86")
+        }
     }
 
     buildTypes {

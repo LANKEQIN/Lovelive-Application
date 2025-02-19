@@ -77,6 +77,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import com.lovelive.dreamycolor.model.CharacterCard
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lovelive.dreamycolor.model.VoiceActorCard
+
 
 
 class MainActivity : ComponentActivity() {
@@ -260,6 +268,12 @@ fun EncyclopediaScreen() {
     val database = remember { EncyclopediaDatabase.getDatabase(context) }
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
 
+    // 在进入该页面时初始化角色和声优数据（仅在数据为空时加载 JSON 数据）
+    LaunchedEffect(Unit) {
+        repository.initializeFromAssets(context)
+        repository.initializeVoiceActorsFromAssets(context)
+    }
+
     val viewModel: EncyclopediaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -272,10 +286,13 @@ fun EncyclopediaScreen() {
         }
     )
 
+    // 收集角色和声优数据
     val characters by viewModel.allCharacters.collectAsState(initial = emptyList())
+    val voiceActors by viewModel.allVoiceActors.collectAsState(initial = emptyList())
+    var currentDimension by remember { mutableStateOf("二次元") }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 标题和刷新按钮
+        // 标题和刷新按钮区
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -288,6 +305,31 @@ fun EncyclopediaScreen() {
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .background(
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            MaterialTheme.shapes.medium
+                        )
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DimensionButton(
+                        text = "二次元",
+                        selected = currentDimension == "二次元",
+                        onClick = { currentDimension = "二次元" }
+                    )
+                    DimensionButton(
+                        text = "三次元",
+                        selected = currentDimension == "三次元",
+                        onClick = { currentDimension = "三次元" }
+                    )
+                }
+            }
             Button(
                 onClick = { viewModel.refreshData(context) },
                 colors = ButtonDefaults.buttonColors(
@@ -297,26 +339,140 @@ fun EncyclopediaScreen() {
                 Text("刷新数据")
             }
         }
+
+        // 显示角色或声优数据的列表
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f) // 添加这一行确保高度约束正确
+                .weight(1f)
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(characters.size, key = { index -> characters[index].name }) { index ->
-                    CharacterCardUI(character = characters[index])
+                if (currentDimension == "二次元") {
+                    items(characters.size) { index ->
+                        CharacterCardUI(character = characters[index])
+                    }
+                } else {
+                    items(voiceActors.size) { index ->
+                        VoiceActorCardUI(voiceActor = voiceActors[index])
+                    }
                 }
             }
         }
     }
 }
 
+
+@Composable
+private fun DimensionButton(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .background(
+                if (selected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.surface,
+                MaterialTheme.shapes.small
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = text,
+            color = if (selected) MaterialTheme.colorScheme.onPrimary
+            else MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { /* 点击处理 */ },
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // 姓名部分
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+            Column {
+                Text(
+                    text = voiceActor.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = voiceActor.japaneseName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+                // 系数标签
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text(
+                        text = voiceActor.coefficient,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                thickness = 1.dp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 信息网格
+            GridLayout(
+                listOf(
+                    "生日" to voiceActor.birthday,
+                    "事务所" to voiceActor.agency,
+                    "身高" to "${voiceActor.height}cm"
+                )
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 描述
+            Text(
+                text = voiceActor.description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                lineHeight = 18.sp
+            )
+        }
+    }
+}
 
 @Composable
 fun CharacterCardUI(character: CharacterCard) {

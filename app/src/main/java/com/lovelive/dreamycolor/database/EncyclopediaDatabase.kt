@@ -6,14 +6,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.lovelive.dreamycolor.database.dao.EncyclopediaDao
 import com.lovelive.dreamycolor.model.CharacterCard
+import com.lovelive.dreamycolor.model.VoiceActorCard
+import com.lovelive.dreamycolor.database.dao.VoiceActorDao
 
 @Database(
-    entities = [CharacterCard::class],
-    version = 2,    // 每次修改数据库结构需递增
+    entities = [CharacterCard::class,VoiceActorCard::class],
+    version = 6,    // 每次修改数据库结构需递增
     exportSchema = false
 )
+
 abstract class EncyclopediaDatabase : RoomDatabase() {
     abstract fun encyclopediaDao(): EncyclopediaDao
+    abstract fun voiceActorDao(): VoiceActorDao
 
     companion object {
         @Volatile
