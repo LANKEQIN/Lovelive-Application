@@ -271,7 +271,7 @@ fun EncyclopediaScreen() {
     // 收集角色和声优数据
     val characters by viewModel.allCharacters.collectAsState(initial = emptyList())
     val voiceActors by viewModel.allVoiceActors.collectAsState(initial = emptyList())
-    var currentDimension by remember { mutableStateOf("二次元") }
+    var currentDimension by remember { mutableStateOf("角色") }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 标题和刷新按钮区
@@ -283,7 +283,7 @@ fun EncyclopediaScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "角色百科",
+                text = "百科",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -301,14 +301,14 @@ fun EncyclopediaScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     DimensionButton(
-                        text = "二次元",
-                        selected = currentDimension == "二次元",
-                        onClick = { currentDimension = "二次元" }
+                        text = "角色",
+                        selected = currentDimension == "角色",
+                        onClick = { currentDimension = "角色" }
                     )
                     DimensionButton(
-                        text = "三次元",
-                        selected = currentDimension == "三次元",
-                        onClick = { currentDimension = "三次元" }
+                        text = "声优",
+                        selected = currentDimension == "声优",
+                        onClick = { currentDimension = "声优" }
                     )
                 }
             }
@@ -334,7 +334,7 @@ fun EncyclopediaScreen() {
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (currentDimension == "二次元") {
+                if (currentDimension == "角色") {
                     items(characters.size) { index ->
                         CharacterCardUI(character = characters[index])
                     }
@@ -402,13 +402,13 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
             Column {
                 Text(
                     text = voiceActor.name,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = voiceActor.japaneseName,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -422,7 +422,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
                     Text(
                         text = voiceActor.coefficient,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 13.sp),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -481,13 +481,13 @@ fun CharacterCardUI(character: CharacterCard) {
             Column {
                 Text(
                     text = character.name,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = character.japaneseName,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
