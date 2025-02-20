@@ -17,7 +17,7 @@ android {
         applicationId = "com.lovelive.dreamycolor"
         minSdk = 23
         targetSdk = 35
-        versionCode = generateVersionCode(2025, 2, 18)
+        versionCode = generateVersionCode(2025, 2, 20)
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -26,7 +26,6 @@ android {
             annotationProcessorOptions {
                 arguments.putAll(
                     mapOf(
-                        // 直接设置默认值
                         "room.schemaLocation" to "$projectDir/schemas",
                         "room.incremental" to "true"
                     )
@@ -62,6 +61,9 @@ android {
 }
 
 dependencies {
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

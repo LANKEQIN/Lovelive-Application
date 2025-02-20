@@ -12,11 +12,11 @@ data class VoiceActorCard(
     val birthday: String,
     val agency: String, // 事务所
     val height: Int,
-    val bloodType: String,
-    val hobby: String,
+    val bloodType: String = "",
+    val hobby: String = "",
     val description: String,
     val coefficient: String,
-    val imageRes: String
+    val imageRes: String = ""
 ) {
     constructor() : this(0, "", "", "", "", 0, "", "", "", "", "")
 }

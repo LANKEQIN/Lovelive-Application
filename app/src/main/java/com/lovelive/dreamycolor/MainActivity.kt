@@ -38,8 +38,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 import androidx.compose.animation.Crossfade
@@ -68,7 +66,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.background
 import com.lovelive.dreamycolor.model.CharacterCard
 import com.lovelive.dreamycolor.model.VoiceActorCard
-
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.text.style.TextOverflow
 
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
@@ -147,7 +148,7 @@ fun SplashScreen(
 }
 
 // 主界面内容
-// 修改后的 MainContent 函数
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainContent(settingsManager: SettingsManager) {
     //val navController = rememberNavController() // 注释掉
@@ -378,6 +379,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(300.dp)
             .clickable { /* 点击处理 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -387,6 +389,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
     ) {
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
@@ -460,6 +463,7 @@ fun CharacterCardUI(character: CharacterCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .height(300.dp)
             .clickable { /* 点击进入详情 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -469,6 +473,7 @@ fun CharacterCardUI(character: CharacterCard) {
     ) {
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
@@ -553,6 +558,7 @@ private fun InfoItem(
 ) {
     Column(
         modifier = modifier
+            .height(60.dp)
             .fillMaxWidth()
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -562,12 +568,16 @@ private fun InfoItem(
     ) {
         Text(
             text = label,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = value,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -579,11 +589,11 @@ private fun InfoItem(
 fun ProfileScreen(settingsManager: SettingsManager) {
     var showThemeDialog by remember { mutableStateOf(false) }
     val themeMode by settingsManager.themeModeFlow.collectAsState(initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM)
+    val coroutineScope = rememberCoroutineScope()  // 使用 Compose 内置 scope
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-            // 添加主题设置按钮
+            // 主题设置按钮
             Button(onClick = { showThemeDialog = true }) {
                 Text(
                     text = "主题设置",
@@ -598,7 +608,7 @@ fun ProfileScreen(settingsManager: SettingsManager) {
             currentMode = themeMode,
             onDismiss = { showThemeDialog = false },
             onThemeSelected = { mode ->
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch {
                     settingsManager.setThemeMode(mode)
                 }
             }
