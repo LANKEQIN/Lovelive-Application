@@ -379,7 +379,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height(325.dp)
             .clickable { /* 点击处理 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -402,13 +402,13 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
             Column {
                 Text(
                     text = voiceActor.name,
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = voiceActor.japaneseName,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -422,7 +422,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
                     Text(
                         text = voiceActor.coefficient,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 13.sp),
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -445,7 +445,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(9.dp))
 
             // 描述
             Text(
@@ -463,7 +463,7 @@ fun CharacterCardUI(character: CharacterCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height(325.dp)
             .clickable { /* 点击进入详情 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -481,13 +481,13 @@ fun CharacterCardUI(character: CharacterCard) {
             Column {
                 Text(
                     text = character.name,
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp),
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = character.japaneseName,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
@@ -508,7 +508,7 @@ fun CharacterCardUI(character: CharacterCard) {
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(9.dp))
 
             // 角色描述
             Text(
@@ -523,29 +523,16 @@ fun CharacterCardUI(character: CharacterCard) {
 
 @Composable
 private fun GridLayout(items: List<Pair<String, String>>) {
-    val chunkedItems = items.chunked(2) // 添加这一行以初始化 chunkedItems
-
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        for (rowItems in chunkedItems) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                for ((label, value) in rowItems) {
-                    InfoItem(
-                        label = label,
-                        value = value,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                // 如果不足两项，填充一个空 Box 以维持平衡布局
-                if (rowItems.size < 2) {
-                    Box(modifier = Modifier.weight(1f))
-                }
-            }
+        for ((label, value) in items) {
+            InfoItem(
+                label = label,
+                value = value,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
@@ -558,8 +545,7 @@ private fun InfoItem(
 ) {
     Column(
         modifier = modifier
-            .height(60.dp)
-            .fillMaxWidth()
+            .height(55.dp) // 信息高度
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = MaterialTheme.shapes.small
@@ -576,13 +562,14 @@ private fun InfoItem(
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = value,
-            maxLines = 2,
+            maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
+
 
 
 @Composable
