@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [CharacterCard::class, VoiceActorCard::class],
-    version = 2,
+    version = 4,
     exportSchema = true
 )
 abstract class EncyclopediaDatabase : RoomDatabase() {
@@ -31,8 +31,8 @@ abstract class EncyclopediaDatabase : RoomDatabase() {
                     EncyclopediaDatabase::class.java,
                     "encyclopedia.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
-                    .fallbackToDestructiveMigrationOnDowngrade()
+                    .addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4)
+                    .fallbackToDestructiveMigration() // 添加这行代码允许破坏性迁移
                     .build()
                     .also { INSTANCE = it }
             }
@@ -40,6 +40,18 @@ abstract class EncyclopediaDatabase : RoomDatabase() {
 
         // 数据库迁移定义
         private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 如果表结构有改变，则在这里写对应的 ALTER TABLE 语句；
+                // 如果仅仅是版本号升级而表结构未变，这里可以留空（或写注释说明）
+            }
+        }
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 如果表结构有改变，则在这里写对应的 ALTER TABLE 语句；
+                // 如果仅仅是版本号升级而表结构未变，这里可以留空（或写注释说明）
+            }
+        }
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // 如果表结构有改变，则在这里写对应的 ALTER TABLE 语句；
                 // 如果仅仅是版本号升级而表结构未变，这里可以留空（或写注释说明）

@@ -379,7 +379,7 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(325.dp)
+            .height(285.dp)
             .clickable { /* 点击处理 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -441,11 +441,10 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
                 listOf(
                     "生日" to voiceActor.birthday,
                     "事务所" to voiceActor.agency,
-                    "身高" to "${voiceActor.height}cm"
                 )
             )
 
-            Spacer(modifier = Modifier.height(9.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // 描述
             Text(
@@ -463,7 +462,7 @@ fun CharacterCardUI(character: CharacterCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(325.dp)
+            .height(285.dp)
             .clickable { /* 点击进入详情 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -504,11 +503,10 @@ fun CharacterCardUI(character: CharacterCard) {
                 listOf(
                     "生日" to character.birthday,
                     "年级" to character.schoolYear,
-                    "身高" to "${character.height}cm"
                 )
             )
 
-            Spacer(modifier = Modifier.height(9.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // 角色描述
             Text(

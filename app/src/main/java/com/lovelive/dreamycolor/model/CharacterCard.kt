@@ -11,12 +11,11 @@ data class CharacterCard(
     val japaneseName: String,
     val birthday: String,
     val schoolYear: String,
-    val height: Int,
     val bloodType: String = "",
     val hobby: String = "",
     val description: String,
-    val imageRes: String = ""
+    val imageRes: Int = 0
 ) {
     // 建议添加无参构造函数以兼容某些序列化场景
-    constructor() : this(0, "", "", "", "", 0, "", "", "", "")
+    constructor() : this(0, "", "", "", "", "", "", "")
 }
