@@ -74,7 +74,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import android.content.pm.PackageManager
+import androidx.compose.foundation.verticalScroll
+import kotlinx.coroutines.delay
+import androidx.compose.foundation.verticalScroll
+import kotlinx.coroutines.delay
+import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
+import android.content.Context
+import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
 
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
@@ -255,6 +266,7 @@ fun EncyclopediaScreen() {
     val context = LocalContext.current
     val database = remember { EncyclopediaDatabase.getDatabase(context) }
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
+    val settingsManager = remember { SettingsManager(context) }
 
     // 在进入该页面时初始化角色和声优数据（仅在数据为空时加载 JSON 数据）
     LaunchedEffect(Unit) {
@@ -277,6 +289,9 @@ fun EncyclopediaScreen() {
     val characters by viewModel.allCharacters.collectAsState(initial = emptyList())
     val voiceActors by viewModel.allVoiceActors.collectAsState(initial = emptyList())
     var currentDimension by remember { mutableStateOf("角色") }
+
+    // 注意此处：收集是否显示 QJZ 系数的状态，默认 false
+    val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
 
     Column(modifier = Modifier.fillMaxSize()) {
         // 标题和刷新按钮区
@@ -345,7 +360,10 @@ fun EncyclopediaScreen() {
                     }
                 } else {
                     items(voiceActors.size) { index ->
-                        VoiceActorCardUI(voiceActor = voiceActors[index])
+                        VoiceActorCardUI(
+                            voiceActor = voiceActors[index],
+                            showCoefficient = showCoefficient
+                        )
                     }
                 }
             }
@@ -380,7 +398,10 @@ private fun DimensionButton(
 }
 
 @Composable
-fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
+fun VoiceActorCardUI(
+    voiceActor: VoiceActorCard,
+    showCoefficient: Boolean  // 新增的参数，表示是否显示 QJZ 系数
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -394,7 +415,6 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
     ) {
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
@@ -417,19 +437,20 @@ fun VoiceActorCardUI(voiceActor: VoiceActorCard) {
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
-                // 系数标签
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Text(
-                        text = voiceActor.coefficient,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                if (showCoefficient) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text(
+                            text = voiceActor.coefficient,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
 
@@ -477,7 +498,6 @@ fun CharacterCardUI(character: CharacterCard) {
     ) {
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
@@ -577,71 +597,96 @@ private fun InfoItem(
 
 @Composable
 fun ProfileScreen(settingsManager: SettingsManager) {
+// 状态管理
     var showThemeDialog by remember { mutableStateOf(false) }
-    val themeMode by settingsManager.themeModeFlow.collectAsState(initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM)
-    val coroutineScope = rememberCoroutineScope()  // 使用 Compose 内置 scope
+    val themeMode by settingsManager.themeModeFlow.collectAsState(
+        initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM
+    )
+    // 免责声明/隐藏功能相关状态：
+    var showDisclaimer by remember { mutableStateOf(false) }
+    var remainingTime by remember { mutableStateOf(7) }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(40.dp))
+    // 新增：用于显示底部 Snackbar 提示的状态及 HostState
+    var showDarkRealmSnackbar by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-        // 主题设置长条
-        Card(
+    // 主布局：使用垂直滚动以适应小屏幕
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 主内容区：使用垂直滚动
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showThemeDialog = true },
-            shape = MaterialTheme.shapes.medium,
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-            ),
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 2.dp,
-                pressedElevation = 4.dp
-            )
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
+            Spacer(modifier = Modifier.height(40.dp))
+            // 版本号条目（点击后满足条件触发免责声明）
+            VersionEntry(
+                versionName = getVersionName(context),
+                onSecretActivated = { showDisclaimer = true }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            // 主题设置长条
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "主题模式",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    .clickable { showThemeDialog = true },
+                shape = MaterialTheme.shapes.medium,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 2.dp,
+                    pressedElevation = 4.dp
                 )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text(
-                        text = when (themeMode) {
-                            SettingsManager.ThemeMode.FOLLOW_SYSTEM -> "跟随系统"
-                            SettingsManager.ThemeMode.LIGHT -> "浅色"
-                            SettingsManager.ThemeMode.DARK -> "深色"
-                        },
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        modifier = Modifier.padding(end = 8.dp)
+                        text = "主题模式",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                        contentDescription = "箭头",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .size(14.dp)
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = when (themeMode) {
+                                SettingsManager.ThemeMode.FOLLOW_SYSTEM -> "跟随系统"
+                                SettingsManager.ThemeMode.LIGHT -> "浅色"
+                                SettingsManager.ThemeMode.DARK -> "深色"
+                            },
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                            contentDescription = "箭头",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 }
             }
         }
+        // 将 SnackbarHost 放在 Box 的底部中间
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 
+    // 主题选择对话框
     if (showThemeDialog) {
         ThemeSelectionDialog(
             currentMode = themeMode,
@@ -652,6 +697,150 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                 }
             }
         )
+    }
+    // 免责声明对话框，当连续点击版本号后弹出
+    if (showDisclaimer) {
+        DisclaimerDialog(
+            remainingTime = remainingTime,
+            onConfirm = {
+                coroutineScope.launch {
+                    settingsManager.setShowCoefficient(true)
+                }
+                showDisclaimer = false
+                // 点击确认后设置状态以显示提示
+                showDarkRealmSnackbar = true
+            },
+            onDismiss = {
+                showDisclaimer = false
+                remainingTime = 7 // 重置倒计时
+            }
+        ) { newTime ->
+            remainingTime = newTime
+        }
+    }
+    // 显示提示“您已进入黑暗领域”
+    if (showDarkRealmSnackbar) {
+        LaunchedEffect(Unit) {
+            snackbarHostState.showSnackbar("您已进入黑暗领域")
+            showDarkRealmSnackbar = false
+        }
+    }
+}
+
+@Composable
+private fun VersionEntry(
+    versionName: String,
+    onSecretActivated: () -> Unit
+) {
+    var clickCount by remember { mutableStateOf(0) }
+    var lastClickTime by remember { mutableStateOf(0L) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                val now = System.currentTimeMillis()
+                // 检测连续点击
+                if (now - lastClickTime < 1000) {
+                    clickCount++
+                    if (clickCount >= 7) {
+                        onSecretActivated()
+                        clickCount = 0
+                    }
+                } else {
+                    clickCount = 1
+                }
+                lastClickTime = now
+            },
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 4.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "版本号",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            )
+            Text(
+                text = versionName,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+        }
+    }
+}
+@Composable
+private fun DisclaimerDialog(
+    remainingTime: Int,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    updateTime: (Int) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        // 禁止点击对话框外部和返回键自动 dismiss
+        properties = DialogProperties(
+            dismissOnClickOutside = false,
+            dismissOnBackPress = false
+        ),
+        title = {
+            Text(
+                text = "⚠️ 免责声明",
+                color = MaterialTheme.colorScheme.error
+            )
+        },
+        text = {
+            Column {
+                Text("你想成为Z87吗？")
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "请仔细阅读条款（剩余 ${remainingTime}s）",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                enabled = remainingTime <= 0
+            ) {
+                Text("确认")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
+        }
+    )
+    // 倒计时处理
+    LaunchedEffect(Unit) {
+        repeat(7) {
+            delay(1000)
+            updateTime(7 - it - 1)
+        }
+    }
+}
+
+private fun getVersionName(context: Context): String {
+    return try {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
+    } catch (e: Exception) {
+        "1.0.0"
     }
 }
 

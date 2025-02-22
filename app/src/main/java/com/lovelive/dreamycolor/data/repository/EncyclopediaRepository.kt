@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 
 class EncyclopediaRepository(private val dao: EncyclopediaDao) {
     companion object {
-        private const val DATA_VERSION = 1
+        private const val DATA_VERSION = 2
         private const val PREFS_NAME = "app_data"
         private const val KEY_DATA_VERSION = "data_version"
     }

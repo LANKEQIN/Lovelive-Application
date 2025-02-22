@@ -7,12 +7,22 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.map
+import android.content.pm.PackageManager
+import androidx.compose.foundation.verticalScroll
+import kotlinx.coroutines.delay
+import androidx.datastore.preferences.core.booleanPreferencesKey
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class SettingsManager(private val context: Context) {
     companion object {
         private val THEME_MODE = intPreferencesKey("theme_mode")
+        private val SHOW_COEFFICIENT = booleanPreferencesKey("show_coefficient") // 新增
+    }
+
+    // 新增：获取系数显示状态
+    val showCoefficientFlow = context.dataStore.data.map { preferences ->
+        preferences[SHOW_COEFFICIENT] ?: false
     }
 
     // 模式定义
@@ -32,6 +42,11 @@ class SettingsManager(private val context: Context) {
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { settings ->
             settings[THEME_MODE] = mode.value
+        }
+    }
+    suspend fun setShowCoefficient(show: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[SHOW_COEFFICIENT] = show
         }
     }
 }

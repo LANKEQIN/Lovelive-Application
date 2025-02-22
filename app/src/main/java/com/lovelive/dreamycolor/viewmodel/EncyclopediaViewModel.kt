@@ -60,6 +60,7 @@ class EncyclopediaViewModel(
         }
     }
 
+
     fun refreshData(context: Context) {
         viewModelScope.launch {
             try {
