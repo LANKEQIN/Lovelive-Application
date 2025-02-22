@@ -1,5 +1,6 @@
 package com.lovelive.dreamycolor
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Build
 import androidx.activity.ComponentActivity
@@ -86,6 +87,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyColumn
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.widget.Toast
+import com.lovelive.dreamycolor.utils.copyToClipboard
+import androidx.compose.foundation.combinedClickable
+
 
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
@@ -268,7 +277,6 @@ fun EncyclopediaScreen() {
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
     val settingsManager = remember { SettingsManager(context) }
 
-    // 在进入该页面时初始化角色和声优数据（仅在数据为空时加载 JSON 数据）
     LaunchedEffect(Unit) {
         repository.initializeFromAssets(context)
     }
@@ -285,85 +293,114 @@ fun EncyclopediaScreen() {
         }
     )
 
-    // 收集角色和声优数据
-    val characters by viewModel.allCharacters.collectAsState(initial = emptyList())
-    val voiceActors by viewModel.allVoiceActors.collectAsState(initial = emptyList())
-    var currentDimension by remember { mutableStateOf("角色") }
+    val groupedCharacters by viewModel.getCharactersByGroup().collectAsState(initial = emptyMap())
+    val groupedVoiceActors by viewModel.getVoiceActorsByGroup().collectAsState(initial = emptyMap())
 
-    // 注意此处：收集是否显示 QJZ 系数的状态，默认 false
+    var currentDimension by remember { mutableStateOf("角色") }
     val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 标题和刷新按钮区
+        // 标题区（优化后的布局）
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween // 改为 Center
         ) {
             Text(
                 text = "百科",
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f) // 添加权重
             )
+            // 右半部分按钮组
             Row(
+                modifier = Modifier.weight(2f),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.Center
             ) {
-                Row(
+               // 切换按钮容器（居中处理）
+                Box(
                     modifier = Modifier
                         .background(
                             MaterialTheme.colorScheme.secondaryContainer,
                             MaterialTheme.shapes.medium
                         )
-                        .padding(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    DimensionButton(
-                        text = "角色",
-                        selected = currentDimension == "角色",
-                        onClick = { currentDimension = "角色" }
-                    )
-                    DimensionButton(
-                        text = "声优",
-                        selected = currentDimension == "声优",
-                        onClick = { currentDimension = "声优" }
-                    )
+                    Row(
+                        modifier = Modifier.padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        DimensionButton(
+                            text = "角色",
+                            selected = currentDimension == "角色",
+                            onClick = { currentDimension = "角色" }
+                        )
+                        DimensionButton(
+                            text = "声优",
+                            selected = currentDimension == "声优",
+                            onClick = { currentDimension = "声优" }
+                        )
+                    }
                 }
-            }
-            Button(
-                onClick = { viewModel.refreshData(context) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Text("刷新数据")
+
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp)) // 添加间距
+
+                // 刷新按钮
+                Button(
+                    onClick = { viewModel.refreshData(context) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Text("刷新数据")
+                }
             }
         }
 
-        // 显示角色或声优数据的列表
-        Box(
+        // 可滚动内容区
+        Column(
             modifier = Modifier
-                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .weight(1f)
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                if (currentDimension == "角色") {
-                    items(characters.size) { index ->
-                        CharacterCardUI(character = characters[index])
-                    }
-                } else {
-                    items(voiceActors.size) { index ->
-                        VoiceActorCardUI(
-                            voiceActor = voiceActors[index],
-                            showCoefficient = showCoefficient
+            if (currentDimension == "角色") {
+                groupedCharacters.forEach { (groupName, characters) ->
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Text(
+                            text = groupName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
+                        RegularVerticalGrid(items = characters) { character ->
+                            CharacterCardUI(character = character)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            } else {
+                groupedVoiceActors.forEach { (groupName, voiceActors) ->
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Text(
+                            text = groupName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                        RegularVerticalGrid(items = voiceActors) { actor ->
+                            VoiceActorCardUI(
+                                voiceActor = actor,
+                                showCoefficient = showCoefficient
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
@@ -371,6 +408,38 @@ fun EncyclopediaScreen() {
     }
 }
 
+@Composable
+private fun <T> RegularVerticalGrid(
+    items: List<T>,
+    columnCount: Int = 2,
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
+    content: @Composable (T) -> Unit
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        items.chunked(columnCount).forEach { rowItems ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                rowItems.forEach { item ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    ) {
+                        content(item)
+                    }
+                }
+                // 补充空位
+                if (rowItems.size < columnCount) {
+                    repeat(columnCount - rowItems.size) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 private fun DimensionButton(
@@ -397,11 +466,13 @@ private fun DimensionButton(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VoiceActorCardUI(
     voiceActor: VoiceActorCard,
     showCoefficient: Boolean  // 新增的参数，表示是否显示 QJZ 系数
 ) {
+    val context = LocalContext.current // 添加这行来获取 context
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -424,7 +495,15 @@ fun VoiceActorCardUI(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-            Column {
+                Column(
+                    modifier = Modifier
+                        .combinedClickable(
+                            onClick = { /* 普通点击不做任何事 */ },
+                            onLongClick = {
+                                context.copyToClipboard("${voiceActor.name}\n${voiceActor.japaneseName}")
+                            }
+                        )
+                ) {
                 Text(
                     text = voiceActor.name,
                     style = MaterialTheme.typography.titleLarge,
@@ -483,8 +562,10 @@ fun VoiceActorCardUI(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CharacterCardUI(character: CharacterCard) {
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -502,7 +583,15 @@ fun CharacterCardUI(character: CharacterCard) {
                 .padding(16.dp)
         ) {
             // 姓名部分
-            Column {
+            Column(
+                modifier = Modifier
+                    .combinedClickable(
+                        onClick = { /* 普通点击不做任何事 */ },
+                        onLongClick = {
+                            context.copyToClipboard("${character.name}\n${character.japaneseName}")
+                        }
+                    )
+            ) {
                 Text(
                     text = character.name,
                     style = MaterialTheme.typography.titleLarge,
@@ -560,20 +649,30 @@ private fun GridLayout(items: List<Pair<String, String>>) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun InfoItem(
     label: String,
     value: String,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
-            .height(55.dp) // 信息高度
+            .height(55.dp)
             .background(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 shape = MaterialTheme.shapes.small
             )
             .padding(8.dp)
+            // 添加长按手势
+            .combinedClickable(
+                onClick = { /* 普通点击不做处理 */ },
+                onLongClick = {
+                    context.copyToClipboard(value)
+                }
+            )
     ) {
         Text(
             text = label,
