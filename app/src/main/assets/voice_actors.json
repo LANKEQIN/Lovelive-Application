@@ -4,7 +4,7 @@
     "japaneseName": "新田 恵海",
     "birthday": "1985.12.10",
     "agency": "S公司",
-    "description": "高坂穗乃果的声优，同时也是歌手",
+    "description": "高坂穗乃果的声优",
     "coefficient": "QJZ2"
   },
   {
@@ -12,7 +12,7 @@
     "japaneseName": "内田 彩",
     "birthday": "1986.07.23",
     "agency": "I'M Enterprise",
-    "description": "南小鸟的声优，以独特的声线著称",
+    "description": "南小鸟的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -20,7 +20,7 @@
     "japaneseName": "三森 すずこ",
     "birthday": "1986.06.28",
     "agency": "Space Craft",
-    "description": "园田海未的声优，活跃于声优界和演艺界",
+    "description": "园田海未的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -28,7 +28,7 @@
     "japaneseName": "南條 愛乃",
     "birthday": "1984.07.12",
     "agency": "自由职业",
-    "description": "绚濑绘里声优，同时是音乐组合fripSide的主唱",
+    "description": "绚濑绘里的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -36,7 +36,7 @@
     "japaneseName": "楠田 亜衣奈",
     "birthday": "1989.02.01",
     "agency": "HoriPro",
-    "description": "东条希声优，擅长综艺节目主持",
+    "description": "东条希的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -44,7 +44,7 @@
     "japaneseName": "徳井 青空",
     "birthday": "1989.12.26",
     "agency": "TOY'S FACTORY",
-    "description": "矢泽日香声优，同时是职业漫画家",
+    "description": "矢泽妮可的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -52,7 +52,7 @@
     "japaneseName": "Pile",
     "birthday": "1988.05.02",
     "agency": "Rhythmedia",
-    "description": "西木野真姬声优，日韩混血的歌手演员",
+    "description": "西木野真姬的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -60,7 +60,7 @@
     "japaneseName": "久保 ユリカ",
     "birthday": "1989.05.19",
     "agency": "ARTSVISION",
-    "description": "小泉花阳声优，昵称「久保病」的拥有者",
+    "description": "小泉花阳的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -68,7 +68,7 @@
     "japaneseName": "飯田 里穂",
     "birthday": "1991.10.26",
     "agency": "Hirata Office",
-    "description": "星空凛声优，童星出身的全能艺人",
+    "description": "星空凛的声优",
     "coefficient": "QJZ1"
   },
 
@@ -81,7 +81,7 @@
     "japaneseName": "伊波 杏樹",
     "birthday": "1996.02.07",
     "agency": "SMA",
-    "description": "高海千歌声优，具有强烈舞台表现力的实力派",
+    "description": "高海千歌的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -89,23 +89,7 @@
     "japaneseName": "逢田 梨香子",
     "birthday": "1992.08.08",
     "agency": "S",
-    "description": "樱内梨子声优，拥有独特的优雅声线",
-    "coefficient": "QJZ1"
-  },
-  {
-    "name": "诹访奈奈香",
-    "japaneseName": "諏訪 ななか",
-    "birthday": "1994.08.29",
-    "agency": "Kenyu Office",
-    "description": "松浦果南声优，擅长用醇厚声线演绎温柔角色",
-    "coefficient": "QJZ2"
-  },
-  {
-    "name": "小宫有纱",
-    "japaneseName": "小宮 有紗",
-    "birthday": "1994.02.05",
-    "agency": "81 PRODUCE",
-    "description": "黑泽黛雅声优，影视声优双栖的全能艺人",
+    "description": "樱内梨子的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -113,7 +97,31 @@
     "japaneseName": "斉藤 朱夏",
     "birthday": "1996.08.16",
     "agency": "Hirata Office",
-    "description": "渡边曜声优，以元气声线与阳光形象著称",
+    "description": "渡边曜的声优",
+    "coefficient": "QJZ1"
+  },
+  {
+    "name": "诹访奈奈香",
+    "japaneseName": "諏訪 ななか",
+    "birthday": "1994.08.29",
+    "agency": "Kenyu Office",
+    "description": "松浦果南的声优",
+    "coefficient": "QJZ2"
+  },
+  {
+    "name": "小宫有纱",
+    "japaneseName": "小宮 有紗",
+    "birthday": "1994.02.05",
+    "agency": "81 PRODUCE",
+    "description": "影视声优双栖的全能艺人",
+    "coefficient": "QJZ1"
+  },
+  {
+    "name": "铃木爱奈",
+    "japaneseName": "鈴木 愛奈",
+    "birthday": "1991.07.23",
+    "agency": "HOLYPEAK",
+    "description": "小原鞠莉的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -121,7 +129,7 @@
     "japaneseName": "小林 愛香",
     "birthday": "1995.11.23",
     "agency": "SMA",
-    "description": "津岛善子声优，擅长爆发式演技的实力派",
+    "description": "津岛善子的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -129,23 +137,15 @@
     "japaneseName": "高槻 かなこ",
     "birthday": "1993.12.06",
     "agency": "无",
-    "description": "国木田花丸声优，拥有治愈系柔和声线",
+    "description": "国木田花丸的声优",
     "coefficient": "QJZ5"
-  },
-  {
-    "name": "铃木爱奈",
-    "japaneseName": "鈴木 愛奈",
-    "birthday": "1991.07.23",
-    "agency": "HOLYPEAK",
-    "description": "小原鞠莉声优，音域广阔的实力派歌手声优",
-    "coefficient": "QJZ1"
   },
   {
     "name": "降幡爱",
     "japaneseName": "降幡 愛",
     "birthday": "1996.08.19",
     "agency": "Ace Crew",
-    "description": "黑泽露比声优，能将怯懦与坚强完美融合",
+    "description": "黑泽露比的声优",
     "coefficient": "QJZ1"
   },
 
@@ -156,7 +156,7 @@
     "japaneseName": "矢野 妃菜喜",
     "birthday": "1997.02.14",
     "agency": "Sony Music Artists",
-    "description": "高咲侑声优，新生代实力派声优代表人物",
+    "description": "高咲侑的声优",
     "coefficient": "QJZ2"
   },
   {
@@ -164,7 +164,7 @@
     "japaneseName": "大西 亜玖璃",
     "birthday": "1997.08.22",
     "agency": "HoriPro",
-    "description": "上原步梦声优，以治愈系声线闻名的次世代声优",
+    "description": "上原步梦的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -172,7 +172,7 @@
     "japaneseName": "相良 茉優",
     "birthday": "1998.12.02",
     "agency": "81 PRODUCE",
-    "description": "中须霞声优，擅长傲娇角色的新生代声优",
+    "description": "中须霞的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -180,7 +180,7 @@
     "japaneseName": "前田 佳織里",
     "birthday": "1996.04.25",
     "agency": "Amuse",
-    "description": "樱坂雫声优，拥有多重声线切换能力的实力派",
+    "description": "樱坂雫的声优",
     "coefficient": "QJZ5"
   },
   {
@@ -188,7 +188,7 @@
     "japaneseName": "久保田 未夢",
     "birthday": "1996.01.31",
     "agency": "81 PRODUCE",
-    "description": "朝香果林声优，性感声线与歌姬实力的完美结合",
+    "description": "朝香果林的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -196,7 +196,7 @@
     "japaneseName": "村上 奈津実",
     "birthday": "1995.09.03",
     "agency": "Just Production",
-    "description": "宫下爱声优，元气声线的专业户",
+    "description": "宫下爱的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -204,7 +204,7 @@
     "japaneseName": "鬼頭 明里",
     "birthday": "1994.10.16",
     "agency": "Clare Voice",
-    "description": "近江彼方声优，人气与实力兼备的全能声优",
+    "description": "近江彼方的声优",
     "coefficient": "QJZ2"
   },
   {
@@ -212,7 +212,7 @@
     "japaneseName": "指出 毬亜",
     "birthday": "1998.12.06",
     "agency": "Early Wing",
-    "description": "艾玛·维尔德声优，擅长外语演绎的多语种声优",
+    "description": "艾玛·维尔德的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -220,7 +220,7 @@
     "japaneseName": "田中 ちえ美",
     "birthday": "2000.01.03",
     "agency": "Sony Music Artists",
-    "description": "天王寺璃奈声优，新生代电子音效处理专家",
+    "description": "天王寺璃奈的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -228,7 +228,7 @@
     "japaneseName": "小泉 萌香",
     "birthday": "1999.02.27",
     "agency": "HoriPro",
-    "description": "三船栞子声优，舞台剧与声优双栖的新锐艺人",
+    "description": "三船栞子的声优",
     "coefficient": "QJZ2"
   },
   {
@@ -236,7 +236,7 @@
     "japaneseName": "法元 明菜",
     "birthday": "1997.11.20",
     "agency": "Racoon Dog",
-    "description": "钟岚珠声优，中日双语切换自如的国际派声优",
+    "description": "钟岚珠的声优",
     "coefficient": "QJZ5"
   },
   {
@@ -244,7 +244,7 @@
     "japaneseName": "内田 秀",
     "birthday": "1995.11.16",
     "agency": "Ace Crew",
-    "description": "米雅·泰勒声优，音乐剧出身的声乐型声优",
+    "description": "米雅·泰勒的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -252,7 +252,7 @@
     "japaneseName": "楠木 ともり",
     "birthday": "1999.12.22",
     "agency": "Sony Music Artists",
-    "description": "优木雪菜声优（—2023年3月31日）",
+    "description": "优木雪菜的声优（—2023.3.31）",
     "coefficient": "QJZ1"
   },
   {
@@ -260,7 +260,7 @@
     "japaneseName": "林 鼓子",
     "birthday": "2002.05.15",
     "agency": "Mitt Management",
-    "description": "优木雪菜声优（2023年4月1日—）",
+    "description": "优木雪菜的声优（2023.4.1—）",
     "coefficient": "QJZ1"
   },
 
@@ -275,7 +275,7 @@
     "japaneseName": "伊達 さゆり",
     "birthday": "1997.09.30",
     "agency": "Apollo Bay",
-    "description": "涩谷香音的声优，出生于宫城县。",
+    "description": "涩谷香音的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -283,7 +283,7 @@
     "japaneseName": "Liyuu",
     "birthday": "1997.01.09",
     "agency": "HoriPro International",
-    "description": "唐可可的声优。来自中国上海的cosplayer、歌手。",
+    "description": "唐可可的声优",
     "coefficient": "QJZ3"
   },
   {
@@ -291,7 +291,7 @@
     "japaneseName": "岬 なこ",
     "birthday": "1997.03.08",
     "agency": "Holy Peak",
-    "description": "岚千砂都的声优。出生于兵库县。",
+    "description": "岚千砂都的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -299,7 +299,7 @@
     "japaneseName": "ペイトン 尚未",
     "birthday": "2003.07.01",
     "agency": "Sony Music Artists",
-    "description": "平安名堇的声优。出生于埼玉县。",
+    "description": "平安名堇的声优。",
     "coefficient": "QJZ1"
   },
   {
@@ -307,7 +307,7 @@
     "japaneseName": "青山 なぎさ",
     "birthday": "1998.05.16",
     "agency": "Apollo Bay",
-    "description": "叶月恋的声优。出生于东京都。通过一般公开招募选拔。",
+    "description": "叶月恋的声优。",
     "coefficient": "QJZ1"
   },
   {
@@ -315,7 +315,7 @@
     "japaneseName": "鈴原 希実",
     "birthday": "2002.10.31",
     "agency": "SMA",
-    "description": "樱小路希奈子的声优。通过一般公开招募选拔。",
+    "description": "樱小路希奈子的声优",
     "coefficient": "QJZ3"
   },
   {
@@ -323,7 +323,7 @@
     "japaneseName": "薮島 朱音",
     "birthday": "2002.07.17",
     "agency": "SMA",
-    "description": "米女芽衣的声优。",
+    "description": "米女芽衣的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -331,7 +331,7 @@
     "japaneseName": "大熊 和奏",
     "birthday": "2001.04.12",
     "agency": "WITH LINE",
-    "description": "若菜四季的声优。",
+    "description": "若菜四季的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -339,7 +339,7 @@
     "japaneseName": "絵森 彩",
     "birthday": "2004.02.22",
     "agency": "SMA",
-    "description": "鬼塚夏美的声优。",
+    "description": "鬼塚夏美的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -347,7 +347,7 @@
     "japaneseName": "坂倉 花",
     "birthday": "2004.04.03",
     "agency": "StarRise",
-    "description": "鬼塚冬毬的声优。通过一般公开招募选拔。",
+    "description": "鬼塚冬毬的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -355,7 +355,7 @@
     "japaneseName": "結那",
     "birthday": "2001.09.27",
     "agency": "放映新社",
-    "description": "薇恩·玛格丽特的声优。",
+    "description": "薇恩·玛格丽特的声优",
     "coefficient": "QJZ1"
   },
 
@@ -367,7 +367,7 @@
     "japaneseName": "楡井 希実",
     "birthday": "未知",
     "agency": "Apollo Bay",
-    "description": "日野下花帆的声优。通过选拔加入。",
+    "description": "日野下花帆的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -375,7 +375,7 @@
     "japaneseName": "野中 ここな",
     "birthday": "未知",
     "agency": "Amuse",
-    "description": "村野沙耶香的声优。",
+    "description": "村野沙耶香的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -383,7 +383,7 @@
     "japaneseName": "花宮 初奈",
     "birthday": "未知",
     "agency": "Sony Music Artists",
-    "description": "乙宗梢的声优。",
+    "description": "乙宗梢的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -391,7 +391,7 @@
     "japaneseName": "佐々木 琴子",
     "birthday": "未知",
     "agency": "Sony Music Artists",
-    "description": "夕雾缀理的声优。前乃木坂46成员。",
+    "description": "夕雾缀理的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -399,7 +399,7 @@
     "japaneseName": "菅 叶和",
     "birthday": "未知",
     "agency": "HoriPro International",
-    "description": "大泽瑠璃乃的声优。",
+    "description": "大泽瑠璃乃的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -407,7 +407,7 @@
     "japaneseName": "月音 こな",
     "birthday": "未知",
     "agency": "avex pictures",
-    "description": "藤岛慈的声优。父亲是LoveLive!粉丝。",
+    "description": "藤岛慈的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -415,7 +415,7 @@
     "japaneseName": "櫻井 陽菜",
     "birthday": "未知",
     "agency": "HoriPro International",
-    "description": "百生吟子的声优。",
+    "description": "百生吟子的声优",
     "coefficient": "QJZ1"
   },
   {
@@ -423,7 +423,7 @@
     "japaneseName": "葉山 風花",
     "birthday": "未知",
     "agency": "LINK",
-    "description": "徒町小铃的声优。",
+    "description": "徒町小铃的声优",
     "coefficient": "QJZ1"
   },
   {
