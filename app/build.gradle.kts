@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.androidx.compose.foundation)
     ksp (libs.androidx.room.compiler)
