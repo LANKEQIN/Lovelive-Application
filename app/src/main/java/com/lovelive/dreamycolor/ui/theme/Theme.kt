@@ -10,6 +10,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.lovelive.dreamycolor.SettingsManager
+import androidx.compose.runtime.remember
+
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -27,6 +29,7 @@ private val LightColorScheme = lightColorScheme(
 fun DreamyColorTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     themeMode: SettingsManager.ThemeMode = SettingsManager.ThemeMode.FOLLOW_SYSTEM,
+    textSize: SettingsManager.TextSize,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -34,6 +37,20 @@ fun DreamyColorTheme(
         SettingsManager.ThemeMode.LIGHT -> false
         SettingsManager.ThemeMode.DARK -> true
         else -> darkTheme // 跟随系统
+    }
+
+    // 字体缩放计算（新增）
+    val textScaleRatio = remember(textSize) {
+        when (textSize) {
+            SettingsManager.TextSize.FOLLOW_SYSTEM -> 1.0f
+            SettingsManager.TextSize.SMALL -> 0.85f
+            SettingsManager.TextSize.MEDIUM -> 1.0f
+            SettingsManager.TextSize.LARGE -> 1.15f
+        }
+    }
+
+    val scaledTypography = remember(textScaleRatio) {
+        Typography.scaleStyle(textScaleRatio) // 这需要第三步实现
     }
 
     val colorScheme = when {
@@ -48,7 +65,23 @@ fun DreamyColorTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = scaledTypography,
         content = content
     )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

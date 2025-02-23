@@ -140,7 +140,11 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 
-
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PlayCircleOutline
+import androidx.compose.material.icons.filled.ArrowForwardIos
 
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
@@ -150,6 +154,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode by settingsManager.themeModeFlow.collectAsState(initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM)
+            val textSize by settingsManager.textSizeFlow.collectAsState(
+                initial = SettingsManager.TextSize.FOLLOW_SYSTEM // 添加初始值
+            )
             val isDarkTheme = when (themeMode) {
                 SettingsManager.ThemeMode.LIGHT -> false
                 SettingsManager.ThemeMode.DARK -> true
@@ -164,6 +171,7 @@ class MainActivity : ComponentActivity() {
 
             DreamyColorTheme(
                 themeMode = themeMode,
+                textSize = textSize
             ) {
                 // 状态控制启动页显示
                 var showSplash by remember { mutableStateOf(true) }
@@ -314,71 +322,67 @@ data class Website(
     val url: String,
     val icon: ImageVector
 )
+// 新增音乐MV数据类
 data class MusicVideo(
     val id: String,
     val title: String,
-    val videoUrl: String,
-    val coverResId: Int, // 占位图资源
-    val description: String
+    val description: String,
+    val videoUrl: String = "",       // 后期替换实际链接
+    val coverPlaceholder: ImageVector = Icons.Default.MusicNote // 占位图标
 )
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-@Composable
-fun InspirationScreen() {
-    val websites = listOf(
-        Website(
-            title = "缪斯时光蛋",
-            url = "https://www.llhistoy.lionfree.net/lovelive.ws/index.html",
-            icon = Icons.Filled.HistoryEdu
-        ),
-        Website(
-            title = "Aqours许愿瓶",
-            url = "https://aqours.tv/",
-            icon = Icons.Filled.WaterDrop
-        ),
-        Website(
-            title = "虹之咲活动室",
-            url = "https://nijigaku.club/",
-            icon = Icons.Filled.Group
-        ),
-        Website(
-            title = "Liella星象馆",
-            url = "https://liella.club/",
-            icon = Icons.Filled.Star
-        )
+// 配置数据
+private val musicMagazineData = listOf(
+    MusicVideo(
+        id = "mv1",
+        title = "始まりは君の空",
+        description = """
+            |这是Liella!的第一首单曲的MV
+            |制作团队：
+            |- 剧本：花田十辉
+            |- 分镜：森田宏幸
+            |- 演出：居村健治
+            |- 作画导演：后藤望、杉本海帆、とみながまり、吉田雄一
+            |- 总作画导演：斋藤敦史、佐野惠一
+            |- 片尾卡片：如月忧
+            |
+            |汉化：
+            |- 翻译：No.10字幕组
+            |
+            |LoveLive! Superstar!!
+            |私立结丘女子高等学校，在表参道、原宿、青山三街道交界之处，一所新设立的学校今年迎来了第一批入学的学生。没有历史、没有学长、没有名气，要什么没什么的新学校里，以涩谷香音为中心的五位少女与“学园偶像”相遇了。我，果然还是最喜欢唱歌了！想通过歌声……实现愿望！尚且稚嫩的星星们，不断积累着大大的梦想——。纯白而拥有着无限可能的她们的「大家一起来实现的故事（学园偶像计划）」。展翅飞翔吧！我们的LoveLive！
+            |
+            |主要配音：
+            |- 涩谷香音：伊达小百合
+            |- 唐可可：Liyuu
+            |- 岚千砂都：岬奈子
+            |- 平安名堇：Payton尚未
+            |- 叶月恋：青山渚
+            |
+            |制作团队：
+            |- 原作：矢立肇
+            |- 原案：公野樱子
+            |- 监督：京极尚彦
+            |- 系列构成：花田十辉
+            |- 角色设计原案：室田雄平
+            |- 角色设计：斋藤敦史
+            |- 设计工作：如月忧
+            |- 美术监督：春日礼儿
+            |- 概念艺术：西川洋一
+            |- 色彩设计：加藤里惠
+            |- CG监督：饭沼佑树
+            |- 摄影监督：北冈正
+            |- 编辑：今井大介
+            |- 音响监督：长崎行男
+            |- 音乐：藤泽庆昌
+            |- 音乐制作：Lantis、SUNRISE Music
+            |- 动画制作：SUNRISE
+            |- 制作：2021 PROJECT Lovelive! Superstar!!（SUNRISE、BANDAI NAMCO Arts、KADOKAWA）
+            |
+            |技术支持 By 黑联科技・设计 By @ICYLUNA
+        """.trimMargin()
     )
+)
 
-    var selectedUrl by remember { mutableStateOf<String?>(null) }
-
-    Crossfade(
-        targetState = selectedUrl,
-        animationSpec = tween(300)
-    ) { url ->
-        when (url) {
-            null -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(websites) { website ->
-                        WebsiteCard(
-                            website = website,
-                            onClick = { selectedUrl = website.url }
-                        )
-                    }
-                }
-            }
-            else -> {
-                WebViewScreen(
-                    url = url,
-                    onClose = { selectedUrl = null }
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun WebsiteCard(
@@ -411,6 +415,128 @@ private fun WebsiteCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+}
+
+@Composable
+private fun WebsiteGrid(
+    websites: List<Website>,
+    onWebsiteClick: (String) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(websites) { website ->
+            WebsiteCard(
+                website = website,
+                onClick = { onWebsiteClick(website.url) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun InspirationScreen() {
+
+    var showPlanetariumDialog by remember { mutableStateOf(false) }
+
+    val websites = listOf(
+        Website(
+            title = "缪斯时光蛋",
+            url = "https://www.llhistoy.lionfree.net/lovelive.ws/index.html",
+            icon = Icons.Filled.HistoryEdu
+        ),
+        Website(
+            title = "Aqours许愿瓶",
+            url = "https://aqours.tv/",
+            icon = Icons.Filled.WaterDrop
+        ),
+        Website(
+            title = "虹之咲活动室",
+            url = "https://nijigaku.club/",
+            icon = Icons.Filled.Group
+        ),
+        Website(
+            title = "Liella星象馆",
+            url = "dialog://liella",
+            icon = Icons.Filled.Star
+        )
+    )
+
+    var selectedUrl by remember { mutableStateOf<String?>(null) }
+    var selectedMV by remember { mutableStateOf<MusicVideo?>(null) }
+    var currentScreen by remember { mutableStateOf<String?>(null) }
+
+    Crossfade(
+        targetState = currentScreen,
+        animationSpec = tween(300)
+    ) { screen ->
+        when (screen) {
+            // 默认网格界面
+            null -> {
+                WebsiteGrid(
+                    websites = websites,
+                    onWebsiteClick = { url ->
+                        if (url == "dialog://liella") {
+                            showPlanetariumDialog = true
+                        } else if (url.startsWith("internal://")) {
+                            currentScreen = url
+                        } else {
+                            currentScreen = "webview:$url"
+                        }
+                    }
+                )
+            }
+            // 音乐杂志栏
+            "internal://music_magazine" -> {
+                MusicMagazineScreen(
+                    onBack = { currentScreen = null },
+                )
+            }
+            // 网页浏览（保留原有功能）
+            else -> {
+                WebViewScreen(
+                    url = screen.removePrefix("webview:"),
+                    onClose = { currentScreen = null }
+                )
+            }
+        }
+    }
+    if (showPlanetariumDialog) {
+        AlertDialog(
+            onDismissRequest = { showPlanetariumDialog = false },
+            title = { Text("进入星象馆") },
+            text = { Text("请选择您要进入的版本：") },
+            confirmButton = {
+                Button(onClick = {
+                    currentScreen = "webview:https://liella.club/"
+                    showPlanetariumDialog = false
+                }) {
+                    Text("官方网站")
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    currentScreen = "internal://music_magazine"
+                    showPlanetariumDialog = false
+                }) {
+                    Text("本地内容")
+                }
+            }
+        )
+    }
+
+    // MV详情页叠加层
+    selectedMV?.let { mv ->
+        MusicVideoDetailScreen(
+            mv = mv,
+            onBack = { selectedMV = null }
+        )
     }
 }
 
@@ -497,6 +623,119 @@ fun WebViewScreen(
         )
     }
 }
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+private fun MusicMagazineScreen(
+    onBack: () -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("🎵 音乐与杂志") },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.Default.ArrowBack, "返回")
+                }
+            }
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(8.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(items = musicMagazineData) { mv ->
+                MusicVideoCard(
+                    mv = mv,
+                    onClick = { /* ★★★ 此处已清空点击响应 ★★★ */ }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MusicVideoCard(
+    mv: MusicVideo,
+    onClick: () -> Unit = {} // ★★★ 默认空实现 ★★★
+) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable { /* ★★★ 点击仍维持水波纹效果但无跳转 ★★★ */ },
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        // ★★★ UI展示部分完全不变 ★★★
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = mv.coverPlaceholder,
+                contentDescription = "封面",
+                modifier = Modifier.size(120.dp)
+            )
+            Text(mv.title)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MusicVideoDetailScreen(
+    mv: MusicVideo,
+    onBack: () -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
+        // 顶部导航栏
+        TopAppBar(
+            title = { Text(mv.title) },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "返回"
+                    )
+                }
+            }
+        )
+
+        // 视频占位区域
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .background(Color.Black),
+            contentAlignment = Alignment.Center
+        ) {
+            // 播放图标占位
+            Icon(
+                imageVector = Icons.Default.PlayCircleOutline,
+                contentDescription = "播放",
+                modifier = Modifier.size(64.dp),
+                tint = Color.White
+            )
+        }
+
+        // 简介区域
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
+            Text(
+                text = mv.description,
+                style = MaterialTheme.typography.bodyMedium,
+                lineHeight = 22.sp
+            )
+        }
+    }
+
+    // 处理返回键
+    BackHandler {
+        onBack()
+    }
+}
+
+
 
 
 @Composable
@@ -940,6 +1179,11 @@ fun ProfileScreen(settingsManager: SettingsManager) {
     var showDarkRealmSnackbar by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
+    var showTextSizeDialog by remember { mutableStateOf(false) } // 新增对话框状态
+    val textSize by settingsManager.textSizeFlow.collectAsState(
+        initial = SettingsManager.TextSize.FOLLOW_SYSTEM
+    )
+
     // 主布局：使用垂直滚动以适应小屏幕
     Box(modifier = Modifier.fillMaxSize()) {
         // 主内容区：使用垂直滚动
@@ -948,7 +1192,7 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = Arrangement.spacedBy(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
@@ -957,7 +1201,10 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                 versionName = getVersionName(context),
                 onSecretActivated = { showDisclaimer = true }
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            TextSizeSettingCard(
+                currentSize = textSize,
+                onClick = { showTextSizeDialog = true }
+            )
             // 主题设置长条
             Card(
                 modifier = Modifier
@@ -977,7 +1224,7 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                         .fillMaxWidth()
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         text = "主题模式",
@@ -1014,7 +1261,22 @@ fun ProfileScreen(settingsManager: SettingsManager) {
         )
     }
 
-    // 主题选择对话框
+    // 新增文字大小对话框
+    if (showTextSizeDialog) {
+        TextSizeSelectionDialog(
+            currentSize = textSize,
+            onDismiss = { showTextSizeDialog = false },
+            onSizeSelected = { size ->
+                coroutineScope.launch {
+                    settingsManager.setTextSize(size)
+                }
+                showTextSizeDialog = false
+            }
+        )
+    }
+
+
+// 主题选择对话框
     if (showThemeDialog) {
         ThemeSelectionDialog(
             currentMode = themeMode,
@@ -1054,6 +1316,104 @@ fun ProfileScreen(settingsManager: SettingsManager) {
         }
     }
 }
+
+@Composable
+private fun TextSizeSettingCard(
+    currentSize: SettingsManager.TextSize,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 4.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "文字大小",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.primary
+                )
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = when (currentSize) {
+                        SettingsManager.TextSize.FOLLOW_SYSTEM -> "跟随系统"
+                        SettingsManager.TextSize.SMALL -> "小号"
+                        SettingsManager.TextSize.MEDIUM -> "中号"
+                        SettingsManager.TextSize.LARGE -> "大号"
+                    },
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                    contentDescription = "箭头",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
+    }
+}
+@Composable
+private fun TextSizeSelectionDialog(
+    currentSize: SettingsManager.TextSize,
+    onDismiss: () -> Unit,
+    onSizeSelected: (SettingsManager.TextSize) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择文字大小") },
+        text = {
+            Column {
+                SettingsManager.TextSize.entries.forEach { size ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSizeSelected(size) }
+                    ) {
+                        RadioButton(
+                            selected = size == currentSize,
+                            onClick = { onSizeSelected(size) }
+                        )
+                        Text(
+                            text = when (size) {
+                                SettingsManager.TextSize.FOLLOW_SYSTEM -> "跟随系统 (默认)"
+                                SettingsManager.TextSize.SMALL -> "小号 (更紧凑)"
+                                SettingsManager.TextSize.MEDIUM -> "中号 (推荐)"
+                                SettingsManager.TextSize.LARGE -> "大号 (更易读)"
+                            },
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("确定")
+            }
+        }
+    )
+}
+
 
 @Composable
 private fun VersionEntry(

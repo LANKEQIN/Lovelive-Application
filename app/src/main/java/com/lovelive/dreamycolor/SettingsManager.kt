@@ -17,7 +17,8 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "se
 class SettingsManager(private val context: Context) {
     companion object {
         private val THEME_MODE = intPreferencesKey("theme_mode")
-        private val SHOW_COEFFICIENT = booleanPreferencesKey("show_coefficient") // 新增
+        private val SHOW_COEFFICIENT = booleanPreferencesKey("show_coefficient")
+        private val TEXT_SIZE = intPreferencesKey("text_size") // 新增
     }
 
     // 新增：获取系数显示状态
@@ -47,6 +48,34 @@ class SettingsManager(private val context: Context) {
     suspend fun setShowCoefficient(show: Boolean) {
         context.dataStore.edit { settings ->
             settings[SHOW_COEFFICIENT] = show
+        }
+    }
+
+
+    // 文本大小枚举定义（新增）
+    enum class TextSize(val value: Int) {
+        FOLLOW_SYSTEM(0),
+        SMALL(1),
+        MEDIUM(2),
+        LARGE(3);
+
+        companion object {
+            fun from(value: Int): TextSize {
+                return entries.firstOrNull { it.value == value } ?: FOLLOW_SYSTEM
+            }
+        }
+    }
+
+    // 文本大小状态流（新增）
+    val textSizeFlow = context.dataStore.data.map { preferences ->
+        val sizeValue = preferences[TEXT_SIZE] ?: 0
+        TextSize.from(sizeValue)
+    }
+
+    // 保存文本大小方法（新增）
+    suspend fun setTextSize(size: TextSize) {
+        context.dataStore.edit { settings ->
+            settings[TEXT_SIZE] = size.value
         }
     }
 }
