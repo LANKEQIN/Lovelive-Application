@@ -7,9 +7,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.map
-import android.content.pm.PackageManager
-import androidx.compose.foundation.verticalScroll
-import kotlinx.coroutines.delay
 import androidx.datastore.preferences.core.booleanPreferencesKey
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")

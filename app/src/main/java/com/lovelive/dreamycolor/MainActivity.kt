@@ -61,7 +61,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import android.app.Application
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.background
@@ -75,76 +74,44 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import android.content.pm.PackageManager
-import androidx.compose.foundation.verticalScroll
-import kotlinx.coroutines.delay
-import androidx.compose.foundation.verticalScroll
-import kotlinx.coroutines.delay
-import androidx.compose.material3.Text
-import androidx.compose.ui.platform.LocalContext
 import android.content.Context
-import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.LazyColumn
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.widget.Toast
 import com.lovelive.dreamycolor.utils.copyToClipboard
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.clickable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.lovelive.dreamycolor.R
-
-
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Group
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
-
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.material3.FloatingActionButton
+
+
 
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
@@ -227,7 +194,6 @@ fun SplashScreen(
 }
 
 // 主界面内容
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainContent(settingsManager: SettingsManager) {
     //val navController = rememberNavController() // 注释掉
@@ -337,48 +303,6 @@ private val musicMagazineData = listOf(
         title = "始まりは君の空",
         description = """
             |这是Liella!的第一首单曲的MV
-            |制作团队：
-            |- 剧本：花田十辉
-            |- 分镜：森田宏幸
-            |- 演出：居村健治
-            |- 作画导演：后藤望、杉本海帆、とみながまり、吉田雄一
-            |- 总作画导演：斋藤敦史、佐野惠一
-            |- 片尾卡片：如月忧
-            |
-            |汉化：
-            |- 翻译：No.10字幕组
-            |
-            |LoveLive! Superstar!!
-            |私立结丘女子高等学校，在表参道、原宿、青山三街道交界之处，一所新设立的学校今年迎来了第一批入学的学生。没有历史、没有学长、没有名气，要什么没什么的新学校里，以涩谷香音为中心的五位少女与“学园偶像”相遇了。我，果然还是最喜欢唱歌了！想通过歌声……实现愿望！尚且稚嫩的星星们，不断积累着大大的梦想——。纯白而拥有着无限可能的她们的「大家一起来实现的故事（学园偶像计划）」。展翅飞翔吧！我们的LoveLive！
-            |
-            |主要配音：
-            |- 涩谷香音：伊达小百合
-            |- 唐可可：Liyuu
-            |- 岚千砂都：岬奈子
-            |- 平安名堇：Payton尚未
-            |- 叶月恋：青山渚
-            |
-            |制作团队：
-            |- 原作：矢立肇
-            |- 原案：公野樱子
-            |- 监督：京极尚彦
-            |- 系列构成：花田十辉
-            |- 角色设计原案：室田雄平
-            |- 角色设计：斋藤敦史
-            |- 设计工作：如月忧
-            |- 美术监督：春日礼儿
-            |- 概念艺术：西川洋一
-            |- 色彩设计：加藤里惠
-            |- CG监督：饭沼佑树
-            |- 摄影监督：北冈正
-            |- 编辑：今井大介
-            |- 音响监督：长崎行男
-            |- 音乐：藤泽庆昌
-            |- 音乐制作：Lantis、SUNRISE Music
-            |- 动画制作：SUNRISE
-            |- 制作：2021 PROJECT Lovelive! Superstar!!（SUNRISE、BANDAI NAMCO Arts、KADOKAWA）
-            |
-            |技术支持 By 黑联科技・设计 By @ICYLUNA
         """.trimMargin()
     )
 )
@@ -417,7 +341,6 @@ private fun WebsiteCard(
         }
     }
 }
-
 @Composable
 private fun WebsiteGrid(
     websites: List<Website>,
@@ -439,7 +362,6 @@ private fun WebsiteGrid(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun InspirationScreen() {
 
@@ -468,7 +390,6 @@ fun InspirationScreen() {
         )
     )
 
-    var selectedUrl by remember { mutableStateOf<String?>(null) }
     var selectedMV by remember { mutableStateOf<MusicVideo?>(null) }
     var currentScreen by remember { mutableStateOf<String?>(null) }
 
@@ -541,13 +462,14 @@ fun InspirationScreen() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun WebViewScreen(
     url: String,
     onClose: () -> Unit
 ) {
     val context = LocalContext.current
-    var loadingProgress by remember { mutableStateOf(0) }
+    var loadingProgress by remember { mutableIntStateOf(0) }
     var canGoBack by remember { mutableStateOf(false) }
 
     val webView = remember {
@@ -558,7 +480,12 @@ fun WebViewScreen(
                     loadingProgress = newProgress
                 }
             }
+            // 在这里启用 JavaScript，并可以加入其他安全设置，例如禁用文件访问
             settings.javaScriptEnabled = true
+            // 如果不需要文件/内容访问，可以禁用它们：
+            settings.allowFileAccess = false
+            settings.allowContentAccess = false
+
             settings.domStorageEnabled = true
             settings.setSupportZoom(true)
         }
@@ -583,7 +510,10 @@ fun WebViewScreen(
             title = { Text("浏览网页") },
             navigationIcon = {
                 IconButton(onClick = onClose) {
-                    Icon(Icons.Filled.ArrowBack, "返回")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "返回"
+                    )
                 }
             },
             actions = {
@@ -591,13 +521,18 @@ fun WebViewScreen(
                     onClick = { webView.goBack() },
                     enabled = canGoBack
                 ) {
-                    Icon(Icons.Filled.ArrowBack, "上一页")
+                    Icon(Icons.Filled.ArrowBackIosNew, "上一页")
                 }
                 IconButton(
                     onClick = { webView.goForward() },
                     enabled = webView.canGoForward()
                 ) {
-                    Icon(Icons.Filled.ArrowForward, "下一页")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = "下一页",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp)
+                    )
                 }
                 IconButton(onClick = { webView.reload() }) {
                     Icon(Icons.Filled.Refresh, "刷新")
@@ -608,7 +543,7 @@ fun WebViewScreen(
         // 加载进度条
         if (loadingProgress < 100) {
             LinearProgressIndicator(
-                progress = loadingProgress / 100f,
+                progress = { loadingProgress / 100f },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -624,7 +559,9 @@ fun WebViewScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MusicMagazineScreen(
     onBack: () -> Unit
@@ -634,11 +571,10 @@ private fun MusicMagazineScreen(
             title = { Text("🎵 音乐与杂志") },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, "返回")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                 }
             }
         )
-
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             contentPadding = PaddingValues(8.dp),
@@ -657,15 +593,14 @@ private fun MusicMagazineScreen(
 @Composable
 private fun MusicVideoCard(
     mv: MusicVideo,
-    onClick: () -> Unit = {} // ★★★ 默认空实现 ★★★
+    onClick: () -> Unit = {} // 默认空实现
 ) {
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .clickable { /* ★★★ 点击仍维持水波纹效果但无跳转 ★★★ */ },
+            .clickable { onClick() }, // 调用 onClick
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        // ★★★ UI展示部分完全不变 ★★★
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = mv.coverPlaceholder,
@@ -690,7 +625,7 @@ private fun MusicVideoDetailScreen(
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回"
                     )
                 }
@@ -735,9 +670,6 @@ private fun MusicVideoDetailScreen(
     }
 }
 
-
-
-
 @Composable
 fun EncyclopediaScreen() {
     val context = LocalContext.current
@@ -767,110 +699,130 @@ fun EncyclopediaScreen() {
     var currentDimension by remember { mutableStateOf("角色") }
     val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // 标题区（优化后的布局）
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // 改为 Center
-        ) {
-            Text(
-                text = "百科",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f) // 添加权重
-            )
-            // 右半部分按钮组
-            Row(
-                modifier = Modifier.weight(2f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-               // 切换按钮容器（居中处理）
-                Box(
+    // 滚动状态和悬浮按钮可见性
+    val scrollState = rememberScrollState()
+    var isFabVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            isFabVisible = false
+        } else {
+            delay(500) // 停止滚动后延迟显示
+            isFabVisible = true
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // 固定标题区域 - 新增的固定部分
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
                     modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.secondaryContainer,
-                            MaterialTheme.shapes.medium
-                        )
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
-                        modifier = Modifier.padding(4.dp),
+                        modifier = Modifier.weight(2f),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        DimensionButton(
-                            text = "角色",
-                            selected = currentDimension == "角色",
-                            onClick = { currentDimension = "角色" }
-                        )
-                        DimensionButton(
-                            text = "声优",
-                            selected = currentDimension == "声优",
-                            onClick = { currentDimension = "声优" }
-                        )
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    MaterialTheme.shapes.medium
+                                )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                DimensionButton(
+                                    text = "角色",
+                                    selected = currentDimension == "角色",
+                                    onClick = { currentDimension = "角色" }
+                                )
+                                DimensionButton(
+                                    text = "声优",
+                                    selected = currentDimension == "声优",
+                                    onClick = { currentDimension = "声优" }
+                                )
+                            }
+                        }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.padding(horizontal = 8.dp)) // 添加间距
-
-                // 刷新按钮
-                Button(
-                    onClick = { viewModel.refreshData(context) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Text("刷新数据")
+            // 可滚动内容区域 - 与原结构分离
+            Column(
+                modifier = Modifier
+                    .verticalScroll(scrollState)
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
+            ) {
+                if (currentDimension == "角色") {
+                    groupedCharacters.forEach { (groupName, characters) ->
+                        Column {
+                            Text(
+                                text = groupName,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                            RegularVerticalGrid(items = characters) { character ->
+                                CharacterCardUI(character = character)
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
+                } else {
+                    groupedVoiceActors.forEach { (groupName, voiceActors) ->
+                        Column {
+                            Text(
+                                text = groupName,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                            RegularVerticalGrid(items = voiceActors) { actor ->
+                                VoiceActorCardUI(
+                                    voiceActor = actor,
+                                    showCoefficient = showCoefficient
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
                 }
             }
         }
 
-        // 可滚动内容区
-        Column(
+        // 悬浮刷新按钮
+        AnimatedVisibility(
+            visible = isFabVisible,
+            enter = fadeIn(),
+            exit = fadeOut(),
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .weight(1f)
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
         ) {
-            if (currentDimension == "角色") {
-                groupedCharacters.forEach { (groupName, characters) ->
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        Text(
-                            text = groupName,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        RegularVerticalGrid(items = characters) { character ->
-                            CharacterCardUI(character = character)
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
-            } else {
-                groupedVoiceActors.forEach { (groupName, voiceActors) ->
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        Text(
-                            text = groupName,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                        RegularVerticalGrid(items = voiceActors) { actor ->
-                            VoiceActorCardUI(
-                                voiceActor = actor,
-                                showCoefficient = showCoefficient
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
+            FloatingActionButton(
+                onClick = { viewModel.refreshData(context) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "刷新数据",
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
@@ -984,21 +936,6 @@ fun VoiceActorCardUI(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
-                if (showCoefficient) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ),
-                        shape = MaterialTheme.shapes.small
-                    ) {
-                        Text(
-                            text = voiceActor.coefficient,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                }
             }
 
 
@@ -1009,13 +946,13 @@ fun VoiceActorCardUI(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 信息网格
-            GridLayout(
-                listOf(
-                    "生日" to voiceActor.birthday,
-                    "事务所" to voiceActor.agency,
-                )
-            )
+            // 显示信息项，包含生日、事务所及条件下的系数
+            val infoList = mutableListOf<Pair<String, String>>().apply {
+                add("生日" to voiceActor.birthday)
+                add("事务所" to voiceActor.agency)
+                if (showCoefficient) add("系数" to voiceActor.coefficient)
+            }
+            GridLayout(infoList)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -1171,7 +1108,7 @@ fun ProfileScreen(settingsManager: SettingsManager) {
     )
     // 免责声明/隐藏功能相关状态：
     var showDisclaimer by remember { mutableStateOf(false) }
-    var remainingTime by remember { mutableStateOf(7) }
+    var remainingTime by remember { mutableIntStateOf(7) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -1420,8 +1357,8 @@ private fun VersionEntry(
     versionName: String,
     onSecretActivated: () -> Unit
 ) {
-    var clickCount by remember { mutableStateOf(0) }
-    var lastClickTime by remember { mutableStateOf(0L) }
+    var clickCount by remember { mutableIntStateOf(0) }
+    var lastClickTime by remember { mutableLongStateOf(0L) }
 
     Card(
         modifier = Modifier
