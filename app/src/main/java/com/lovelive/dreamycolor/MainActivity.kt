@@ -94,6 +94,52 @@ import android.content.ClipboardManager
 import android.widget.Toast
 import com.lovelive.dreamycolor.utils.copyToClipboard
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.lovelive.dreamycolor.R
+
+
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.activity.compose.BackHandler
+
 
 
 class MainActivity : ComponentActivity() {
@@ -262,13 +308,196 @@ fun ExclusiveScreen() {
     }
 }
 
+
+data class Website(
+    val title: String,
+    val url: String,
+    val icon: ImageVector
+)
+data class MusicVideo(
+    val id: String,
+    val title: String,
+    val videoUrl: String,
+    val coverResId: Int, // 占位图资源
+    val description: String
+)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun InspirationScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        val textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 30.sp)
-        Text(text = stringResource(R.string.navigation_inspiration), style = textStyle)
+    val websites = listOf(
+        Website(
+            title = "缪斯时光蛋",
+            url = "https://www.llhistoy.lionfree.net/lovelive.ws/index.html",
+            icon = Icons.Filled.HistoryEdu
+        ),
+        Website(
+            title = "Aqours许愿瓶",
+            url = "https://aqours.tv/",
+            icon = Icons.Filled.WaterDrop
+        ),
+        Website(
+            title = "虹之咲活动室",
+            url = "https://nijigaku.club/",
+            icon = Icons.Filled.Group
+        ),
+        Website(
+            title = "Liella星象馆",
+            url = "https://liella.club/",
+            icon = Icons.Filled.Star
+        )
+    )
+
+    var selectedUrl by remember { mutableStateOf<String?>(null) }
+
+    Crossfade(
+        targetState = selectedUrl,
+        animationSpec = tween(300)
+    ) { url ->
+        when (url) {
+            null -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(websites) { website ->
+                        WebsiteCard(
+                            website = website,
+                            onClick = { selectedUrl = website.url }
+                        )
+                    }
+                }
+            }
+            else -> {
+                WebViewScreen(
+                    url = url,
+                    onClose = { selectedUrl = null }
+                )
+            }
+        }
     }
 }
+
+@Composable
+private fun WebsiteCard(
+    website: Website,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = website.icon,
+                contentDescription = website.title,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = website.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WebViewScreen(
+    url: String,
+    onClose: () -> Unit
+) {
+    val context = LocalContext.current
+    var loadingProgress by remember { mutableStateOf(0) }
+    var canGoBack by remember { mutableStateOf(false) }
+
+    val webView = remember {
+        WebView(context).apply {
+            webViewClient = WebViewClient()
+            webChromeClient = object : WebChromeClient() {
+                override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                    loadingProgress = newProgress
+                }
+            }
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            settings.setSupportZoom(true)
+        }
+    }
+
+    BackHandler(onBack = {
+        if (canGoBack) {
+            webView.goBack()
+        } else {
+            onClose()
+        }
+    })
+
+    DisposableEffect(Unit) {
+        webView.loadUrl(url)
+        onDispose { webView.destroy() }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 顶部导航栏
+        TopAppBar(
+            title = { Text("浏览网页") },
+            navigationIcon = {
+                IconButton(onClick = onClose) {
+                    Icon(Icons.Filled.ArrowBack, "返回")
+                }
+            },
+            actions = {
+                IconButton(
+                    onClick = { webView.goBack() },
+                    enabled = canGoBack
+                ) {
+                    Icon(Icons.Filled.ArrowBack, "上一页")
+                }
+                IconButton(
+                    onClick = { webView.goForward() },
+                    enabled = webView.canGoForward()
+                ) {
+                    Icon(Icons.Filled.ArrowForward, "下一页")
+                }
+                IconButton(onClick = { webView.reload() }) {
+                    Icon(Icons.Filled.Refresh, "刷新")
+                }
+            }
+        )
+
+        // 加载进度条
+        if (loadingProgress < 100) {
+            LinearProgressIndicator(
+                progress = loadingProgress / 100f,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        // WebView容器
+        AndroidView(
+            factory = { webView },
+            modifier = Modifier.weight(1f),
+            update = { view ->
+                canGoBack = view.canGoBack()
+            }
+        )
+    }
+}
+
 
 @Composable
 fun EncyclopediaScreen() {
