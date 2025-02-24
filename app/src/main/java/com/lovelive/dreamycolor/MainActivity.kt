@@ -91,18 +91,11 @@ import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.viewinterop.AndroidView
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -110,7 +103,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.FloatingActionButton
-
+import android.content.Intent
+import android.net.Uri
 
 
 class MainActivity : ComponentActivity() {
@@ -296,17 +290,6 @@ data class MusicVideo(
     val videoUrl: String = "",       // 后期替换实际链接
     val coverPlaceholder: ImageVector = Icons.Default.MusicNote // 占位图标
 )
-// 配置数据
-private val musicMagazineData = listOf(
-    MusicVideo(
-        id = "mv1",
-        title = "始まりは君の空",
-        description = """
-            |这是Liella!的第一首单曲的MV
-        """.trimMargin()
-    )
-)
-
 
 @Composable
 private fun WebsiteCard(
@@ -362,25 +345,35 @@ private fun WebsiteGrid(
     }
 }
 
+// 扩展函数
+fun Context.openInBrowser(url: String) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    startActivity(intent)
+}
+
+
 @Composable
 fun InspirationScreen() {
 
     var showPlanetariumDialog by remember { mutableStateOf(false) }
+    var showTimeCapsuleDialog by remember { mutableStateOf(false) }
+    var showWishBottleDialog by remember { mutableStateOf(false) }
+    var showActivityRoomDialog by remember { mutableStateOf(false) }
 
     val websites = listOf(
         Website(
             title = "缪斯时光蛋",
-            url = "https://www.llhistoy.lionfree.net/lovelive.ws/index.html",
+            url = "dialog://timecapsule",
             icon = Icons.Filled.HistoryEdu
         ),
         Website(
             title = "Aqours许愿瓶",
-            url = "https://aqours.tv/",
+            url = "dialog://wishbottle",
             icon = Icons.Filled.WaterDrop
         ),
         Website(
             title = "虹之咲活动室",
-            url = "https://nijigaku.club/",
+            url = "dialog://activityroom",
             icon = Icons.Filled.Group
         ),
         Website(
@@ -393,41 +386,47 @@ fun InspirationScreen() {
     var selectedMV by remember { mutableStateOf<MusicVideo?>(null) }
     var currentScreen by remember { mutableStateOf<String?>(null) }
 
+    // 获取当前上下文
+    val context = LocalContext.current
+
     Crossfade(
         targetState = currentScreen,
         animationSpec = tween(300)
     ) { screen ->
         when (screen) {
-            // 默认网格界面
+            // 原星象馆的本地内容
+            "internal://music_magazine" -> MusicMagazineScreen(onBack = { currentScreen = null })
+
+            // 新增的三个本地页面
+            "internal://time_capsule" -> TimeCapsuleScreen(onBack = { currentScreen = null })
+            "internal://wish_pool" -> WishPoolScreen(onBack = { currentScreen = null })
+            "internal://activity_log" -> ActivityLogScreen(onBack = { currentScreen = null })
+
             null -> {
                 WebsiteGrid(
                     websites = websites,
                     onWebsiteClick = { url ->
-                        if (url == "dialog://liella") {
-                            showPlanetariumDialog = true
-                        } else if (url.startsWith("internal://")) {
-                            currentScreen = url
-                        } else {
-                            currentScreen = "webview:$url"
+                        when (url) {
+                            "dialog://liella" -> showPlanetariumDialog = true
+                            "dialog://timecapsule" -> showTimeCapsuleDialog = true
+                            "dialog://wishbottle" -> showWishBottleDialog = true
+                            "dialog://activityroom" -> showActivityRoomDialog = true
                         }
                     }
                 )
             }
-            // 音乐杂志栏
-            "internal://music_magazine" -> {
-                MusicMagazineScreen(
-                    onBack = { currentScreen = null },
-                )
-            }
-            // 网页浏览（保留原有功能）
+
             else -> {
-                WebViewScreen(
-                    url = screen.removePrefix("webview:"),
-                    onClose = { currentScreen = null }
-                )
+                    // 异常情况返回导航
+                    currentScreen = null
+                    WebsiteGrid(
+                        websites = websites,
+                        onWebsiteClick = { /* ... */ }
+                    )
+                }
             }
         }
-    }
+
     if (showPlanetariumDialog) {
         AlertDialog(
             onDismissRequest = { showPlanetariumDialog = false },
@@ -435,7 +434,7 @@ fun InspirationScreen() {
             text = { Text("请选择您要进入的版本：") },
             confirmButton = {
                 Button(onClick = {
-                    currentScreen = "webview:https://liella.club/"
+                    context.openInBrowser("https://liella.club/")
                     showPlanetariumDialog = false
                 }) {
                     Text("官方网站")
@@ -446,7 +445,7 @@ fun InspirationScreen() {
                     currentScreen = "internal://music_magazine"
                     showPlanetariumDialog = false
                 }) {
-                    Text("本地内容")
+                    Text("星象馆")
                 }
             }
         )
@@ -459,106 +458,177 @@ fun InspirationScreen() {
             onBack = { selectedMV = null }
         )
     }
+
+    // 新增时光蛋对话框
+    if (showTimeCapsuleDialog) {
+        TwoOptionDialog(
+            title = "打开时光蛋",
+            confirmText = "官方网站",
+            dismissText = "本地存档",
+            onConfirm = {
+                context.openInBrowser("https://www.llhistoy.lionfree.net/lovelive.ws/index.html")
+                showTimeCapsuleDialog = false
+            },
+            onDismiss = {
+                currentScreen = "internal://time_capsule" // 需要创建对应页面
+                showTimeCapsuleDialog = false
+            }
+        )
+    }
+
+    // 新增许愿瓶对话框
+    if (showWishBottleDialog) {
+        TwoOptionDialog(
+            title = "打开许愿瓶",
+            confirmText = "官方网站",
+            dismissText = "许愿池",
+            onConfirm = {
+                context.openInBrowser("https://aqours.tv/")
+                showWishBottleDialog = false
+            },
+            onDismiss = {
+                currentScreen = "internal://wish_pool" // 需要创建对应页面
+                showWishBottleDialog = false
+            }
+        )
+    }
+
+    // 新增活动室对话框
+    if (showActivityRoomDialog) {
+        TwoOptionDialog(
+            title = "进入活动室",
+            confirmText = "官方网站",
+            dismissText = "活动记录",
+            onConfirm = {
+                context.openInBrowser("https://nijigaku.club/")
+                showActivityRoomDialog = false
+            },
+            onDismiss = {
+                currentScreen = "internal://activity_log" // 需要创建对应页面
+                showActivityRoomDialog = false
+            }
+        )
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun WebViewScreen(
-    url: String,
-    onClose: () -> Unit
+fun TwoOptionDialog(
+    title: String,
+    confirmText: String,
+    dismissText: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-    var loadingProgress by remember { mutableIntStateOf(0) }
-    var canGoBack by remember { mutableStateOf(false) }
-
-    val webView = remember {
-        WebView(context).apply {
-            webViewClient = WebViewClient()
-            webChromeClient = object : WebChromeClient() {
-                override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                    loadingProgress = newProgress
-                }
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text(title) },
+        text = { Text("请选择操作：") },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text(confirmText)
             }
-            // 在这里启用 JavaScript，并可以加入其他安全设置，例如禁用文件访问
-            settings.javaScriptEnabled = true
-            // 如果不需要文件/内容访问，可以禁用它们：
-            settings.allowFileAccess = false
-            settings.allowContentAccess = false
-
-            settings.domStorageEnabled = true
-            settings.setSupportZoom(true)
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(dismissText)
+            }
         }
-    }
+    )
+}
 
-    BackHandler(onBack = {
-        if (canGoBack) {
-            webView.goBack()
-        } else {
-            onClose()
-        }
-    })
 
-    DisposableEffect(Unit) {
-        webView.loadUrl(url)
-        onDispose { webView.destroy() }
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        // 顶部导航栏
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimeCapsuleScreen(
+    onBack: () -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("浏览网页") },
+            title = { Text("📼 缪斯时光蛋") },
             navigationIcon = {
-                IconButton(onClick = onClose) {
+                IconButton(onClick = onBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "返回"
                     )
                 }
-            },
-            actions = {
-                IconButton(
-                    onClick = { webView.goBack() },
-                    enabled = canGoBack
-                ) {
-                    Icon(Icons.Filled.ArrowBackIosNew, "上一页")
-                }
-                IconButton(
-                    onClick = { webView.goForward() },
-                    enabled = webView.canGoForward()
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                        contentDescription = "下一页",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-                IconButton(onClick = { webView.reload() }) {
-                    Icon(Icons.Filled.Refresh, "刷新")
-                }
             }
         )
-
-        // 加载进度条
-        if (loadingProgress < 100) {
-            LinearProgressIndicator(
-                progress = { loadingProgress / 100f },
-                modifier = Modifier.fillMaxWidth()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "时光蛋本地内容待开发",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
         }
-
-        // WebView容器
-        AndroidView(
-            factory = { webView },
-            modifier = Modifier.weight(1f),
-            update = { view ->
-                canGoBack = view.canGoBack()
-            }
-        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WishPoolScreen(
+    onBack: () -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("🏺 许愿池") },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "返回"
+                    )
+                }
+            }
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "许愿池功能筹备中",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ActivityLogScreen(
+    onBack: () -> Unit
+) {
+    Column(Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("📝 活动记录") },
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "返回"
+                    )
+                }
+            }
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "活动记录空页面",
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -567,47 +637,29 @@ private fun MusicMagazineScreen(
     onBack: () -> Unit
 ) {
     Column(Modifier.fillMaxSize()) {
+        // 保留顶部导航栏
         TopAppBar(
-            title = { Text("🎵 音乐与杂志") },
+            title = { Text("🌟 星象馆") },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                 }
             }
         )
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(8.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(items = musicMagazineData) { mv ->
-                MusicVideoCard(
-                    mv = mv,
-                    onClick = { /* ★★★ 此处已清空点击响应 ★★★ */ }
-                )
-            }
-        }
-    }
-}
 
-@Composable
-private fun MusicVideoCard(
-    mv: MusicVideo,
-    onClick: () -> Unit = {} // 默认空实现
-) {
-    Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .clickable { onClick() }, // 调用 onClick
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = mv.coverPlaceholder,
-                contentDescription = "封面",
-                modifier = Modifier.size(120.dp)
+        // 简化后的内容区域
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "星象馆开发中",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
             )
-            Text(mv.title)
         }
     }
 }
