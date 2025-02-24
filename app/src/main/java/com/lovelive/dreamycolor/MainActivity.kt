@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package com.lovelive.dreamycolor
 
 import android.annotation.SuppressLint
@@ -299,7 +301,10 @@ private fun WebsiteCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = onClick,
+                onClickLabel = "打开${website.title}"
+            ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
@@ -429,7 +434,8 @@ fun InspirationScreen() {
 
     if (showPlanetariumDialog) {
         AlertDialog(
-            onDismissRequest = { showPlanetariumDialog = false },
+            onDismissRequest = {
+                showPlanetariumDialog = false },
             title = { Text("进入星象馆") },
             text = { Text("请选择您要进入的版本：") },
             confirmButton = {
@@ -451,62 +457,113 @@ fun InspirationScreen() {
         )
     }
 
-    // MV详情页叠加层
-    selectedMV?.let { mv ->
-        MusicVideoDetailScreen(
-            mv = mv,
-            onBack = { selectedMV = null }
-        )
-    }
 
-    // 新增时光蛋对话框
+// 新增时光蛋对话框
     if (showTimeCapsuleDialog) {
-        TwoOptionDialog(
-            title = "打开时光蛋",
-            confirmText = "官方网站",
-            dismissText = "本地存档",
-            onConfirm = {
-                context.openInBrowser("https://www.llhistoy.lionfree.net/lovelive.ws/index.html")
+        AlertDialog(
+            onDismissRequest = {
+                // 点击对话框外部时只关闭对话框
                 showTimeCapsuleDialog = false
             },
-            onDismiss = {
-                currentScreen = "internal://time_capsule" // 需要创建对应页面
-                showTimeCapsuleDialog = false
-            }
+            title = { Text("打开时光蛋") },
+            text = { Text("请选择操作：") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        context.openInBrowser("https://www.llhistoy.lionfree.net/lovelive.ws/index.html")
+                        showTimeCapsuleDialog = false
+                    }
+                ) {
+                    Text("官方网站")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        currentScreen = "internal://time_capsule"
+                        showTimeCapsuleDialog = false
+                    }
+                ) {
+                    Text("本地存档")
+                }
+            },
+            properties = DialogProperties(
+                dismissOnClickOutside = true,
+                dismissOnBackPress = true
+            )
         )
     }
 
     // 新增许愿瓶对话框
     if (showWishBottleDialog) {
-        TwoOptionDialog(
-            title = "打开许愿瓶",
-            confirmText = "官方网站",
-            dismissText = "许愿池",
-            onConfirm = {
-                context.openInBrowser("https://aqours.tv/")
+        AlertDialog(
+            onDismissRequest = {
+                // 点击对话框外部时只关闭对话框
                 showWishBottleDialog = false
             },
-            onDismiss = {
-                currentScreen = "internal://wish_pool" // 需要创建对应页面
-                showWishBottleDialog = false
-            }
+            title = { Text("打开许愿瓶") },
+            text = { Text("请选择操作：") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        context.openInBrowser("https://aqours.tv/")
+                        showWishBottleDialog = false
+                    }
+                ) {
+                    Text("官方网站")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        currentScreen = "internal://wish_pool"
+                        showWishBottleDialog = false
+                    }
+                ) {
+                    Text("许愿池")
+                }
+            },
+            properties = DialogProperties(
+                dismissOnClickOutside = true,
+                dismissOnBackPress = true
+            )
         )
     }
 
-    // 新增活动室对话框
+
+// 新增活动室对话框
     if (showActivityRoomDialog) {
-        TwoOptionDialog(
-            title = "进入活动室",
-            confirmText = "官方网站",
-            dismissText = "活动记录",
-            onConfirm = {
-                context.openInBrowser("https://nijigaku.club/")
+        AlertDialog(
+            onDismissRequest = {
+                // 点击对话框外部时只关闭对话框
                 showActivityRoomDialog = false
             },
-            onDismiss = {
-                currentScreen = "internal://activity_log" // 需要创建对应页面
-                showActivityRoomDialog = false
-            }
+            title = { Text("进入活动室") },
+            text = { Text("请选择操作：") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        context.openInBrowser("https://nijigaku.club/")
+                        showActivityRoomDialog = false
+                    }
+                ) {
+                    Text("官方网站")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        currentScreen = "internal://activity_log"
+                        showActivityRoomDialog = false
+                    }
+                ) {
+                    Text("活动记录")
+                }
+            },
+            properties = DialogProperties(
+                dismissOnClickOutside = true,
+                dismissOnBackPress = true
+            )
         )
     }
 }
@@ -661,64 +718,6 @@ private fun MusicMagazineScreen(
                 )
             )
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MusicVideoDetailScreen(
-    mv: MusicVideo,
-    onBack: () -> Unit
-) {
-    Column(Modifier.fillMaxSize()) {
-        // 顶部导航栏
-        TopAppBar(
-            title = { Text(mv.title) },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回"
-                    )
-                }
-            }
-        )
-
-        // 视频占位区域
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f)
-                .background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
-            // 播放图标占位
-            Icon(
-                imageVector = Icons.Default.PlayCircleOutline,
-                contentDescription = "播放",
-                modifier = Modifier.size(64.dp),
-                tint = Color.White
-            )
-        }
-
-        // 简介区域
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            Text(
-                text = mv.description,
-                style = MaterialTheme.typography.bodyMedium,
-                lineHeight = 22.sp
-            )
-        }
-    }
-
-    // 处理返回键
-    BackHandler {
-        onBack()
     }
 }
 
@@ -948,7 +947,7 @@ fun VoiceActorCardUI(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(285.dp)
+            .height(295.dp)
             .clickable { /* 点击处理 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
@@ -1026,7 +1025,7 @@ fun CharacterCardUI(character: CharacterCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(285.dp)
+            .height(295.dp)
             .clickable { /* 点击进入详情 */ },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = MaterialTheme.shapes.large,
