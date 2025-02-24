@@ -284,14 +284,6 @@ data class Website(
     val url: String,
     val icon: ImageVector
 )
-// 新增音乐MV数据类
-data class MusicVideo(
-    val id: String,
-    val title: String,
-    val description: String,
-    val videoUrl: String = "",       // 后期替换实际链接
-    val coverPlaceholder: ImageVector = Icons.Default.MusicNote // 占位图标
-)
 
 @Composable
 private fun WebsiteCard(
@@ -388,7 +380,6 @@ fun InspirationScreen() {
         )
     )
 
-    var selectedMV by remember { mutableStateOf<MusicVideo?>(null) }
     var currentScreen by remember { mutableStateOf<String?>(null) }
 
     // 获取当前上下文
@@ -566,31 +557,6 @@ fun InspirationScreen() {
             )
         )
     }
-}
-
-@Composable
-fun TwoOptionDialog(
-    title: String,
-    confirmText: String,
-    dismissText: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = { onDismiss() },
-        title = { Text(title) },
-        text = { Text("请选择操作：") },
-        confirmButton = {
-            Button(onClick = onConfirm) {
-                Text(confirmText)
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text(dismissText)
-            }
-        }
-    )
 }
 
 
