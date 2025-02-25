@@ -60,6 +60,9 @@ import com.lovelive.dreamycolor.utils.copyToClipboard
 import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import kotlin.math.ceil
+
 
 // 用于对话框配置的数据类
 data class DialogConfig(
@@ -563,6 +566,12 @@ private fun MusicMagazineScreen(
     }
 }
 
+sealed class GroupItem {
+    data class Header(val title: String) : GroupItem()
+    data class Character(val data: CharacterCard) : GroupItem()
+    data class VoiceActor(val data: VoiceActorCard) : GroupItem()
+}
+
 
 @Composable
 fun EncyclopediaScreen() {
@@ -599,6 +608,18 @@ fun EncyclopediaScreen() {
     val scrollState = rememberScrollState()
     var isFabVisible by remember { mutableStateOf(true) }
 
+    // 新增：构建带分组的列表数据
+    val characterItems = remember(groupedCharacters) {
+        groupedCharacters.flatMap { (group, list) ->
+            listOf(GroupItem.Header(group)) + list.map { GroupItem.Character(it) }
+        }
+    }
+    val voiceActorItems = remember(groupedVoiceActors) {
+        groupedVoiceActors.flatMap { (group, list) ->
+            listOf(GroupItem.Header(group)) + list.map { GroupItem.VoiceActor(it) }
+        }
+    }
+
     // 监听滚动状态控制FAB可见性
     LaunchedEffect(scrollState.isScrollInProgress) {
         if (scrollState.isScrollInProgress) {
@@ -609,81 +630,64 @@ fun EncyclopediaScreen() {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // 固定标题区域
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
+            // 切换按钮区域
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp), // 增加垂直间距
+                horizontalArrangement = Arrangement.Center, // 添加水平居中排列
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .background(
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            MaterialTheme.shapes.medium
+                        )
+                        .padding(4.dp)
                 ) {
                     Row(
-                        modifier = Modifier.weight(2f),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Box(
-                            modifier = Modifier.background(
-                                MaterialTheme.colorScheme.secondaryContainer,
-                                MaterialTheme.shapes.medium
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                DimensionButton(
-                                    text = "角色",
-                                    selected = currentDimension == "角色",
-                                    onClick = { currentDimension = "角色" }
-                                )
-                                DimensionButton(
-                                    text = "声优",
-                                    selected = currentDimension == "声优",
-                                    onClick = { currentDimension = "声优" }
-                                )
-                            }
-                        }
+                        DimensionButton(
+                            text = "角色",
+                            selected = currentDimension == "角色",
+                            onClick = { currentDimension = "角色" }
+                        )
+                        DimensionButton(
+                            text = "声优",
+                            selected = currentDimension == "声优",
+                            onClick = { currentDimension = "声优" }
+                        )
                     }
                 }
             }
 
-            // 可滚动内容区域
-            Column(
-                modifier = Modifier
-                    .verticalScroll(scrollState)
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
+            // 主内容区改用单 LazyGrid
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (currentDimension == "角色") {
-                    groupedCharacters.forEach { (groupName, characters) ->
-                        GroupSection(
-                            title = groupName,
-                            items = characters,
-                            itemContent = { character ->
-                                CharacterCardUI(character = character)
-                            }
-                        )
+                items(
+                    items = if (currentDimension == "角色") characterItems else voiceActorItems,
+                    span = { item ->
+                        when (item) {
+                            is GroupItem.Header -> GridItemSpan(2) // 标题跨2列
+                            else -> GridItemSpan(1) // 内容项占1列
+                        }
                     }
-                } else {
-                    groupedVoiceActors.forEach { (groupName, voiceActors) ->
-                        GroupSection(
-                            title = groupName,
-                            items = voiceActors,
-                            itemContent = { actor ->
-                                VoiceActorCardUI(
-                                    voiceActor = actor,
-                                    showCoefficient = showCoefficient
-                                )
-                            }
+                ) { item ->
+                    when (item) {
+                        is GroupItem.Header -> GroupHeader(item.title)
+                        is GroupItem.Character -> CharacterCardUI(character = item.data)
+                        is GroupItem.VoiceActor -> VoiceActorCardUI(
+                            voiceActor = item.data,
+                            showCoefficient = showCoefficient
                         )
                     }
                 }
@@ -713,6 +717,22 @@ fun EncyclopediaScreen() {
         }
     }
 }
+
+// 新增：分组标题组件
+@Composable
+private fun GroupHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+    )
+}
+
+
+
 
 @Composable
 fun <T> GroupSection(
@@ -779,7 +799,7 @@ private fun DimensionButton(
                 else MaterialTheme.colorScheme.surface,
                 MaterialTheme.shapes.small
             )
-            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
             text = text,
@@ -798,89 +818,72 @@ fun VoiceActorCardUI(
     showCoefficient: Boolean
 ) {
     val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(295.dp)
-            .clickable { /* 点击处理 */ },
-        elevation = CardDefaults.cardElevation(8.dp),
-        shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            .height(290.dp)
+            .combinedClickable(
+                onClick = { /* 普通点击处理 */ },
+                onLongClick = {
+                    context.copyToClipboard("${voiceActor.name}\n${voiceActor.japaneseName}")
+                }
+            ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp,
+            pressedElevation = 8.dp
+        ),
+        shape = MaterialTheme.shapes.large
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 姓名部分
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = { /* 普通点击不做任何事 */ },
-                            onLongClick = {
-                                context.copyToClipboard("${voiceActor.name}\n${voiceActor.japaneseName}")
-                            }
-                        )
-                ) {
-                    Text(
-                        text = voiceActor.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = voiceActor.japaneseName,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                thickness = 1.dp
+            // 标题区域
+            NameSection(
+                name = voiceActor.name,
+                japaneseName = voiceActor.japaneseName
             )
-            Spacer(modifier = Modifier.height(8.dp))
 
-            // 显示信息项，包含生日、事务所及条件下的系数
-            val infoList = buildList {
-                add("生日" to voiceActor.birthday)
-                add("事务所" to voiceActor.agency)
-                if (showCoefficient) add("系数" to voiceActor.coefficient)
-            }
-            GridLayout(infoList)
+            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // 信息区域
+            GridLayout(
+                listOf(
+                    "生日" to voiceActor.birthday,
+                    "事务所" to voiceActor.agency,
+                    if (showCoefficient) "系数" to voiceActor.coefficient else null
+                ).filterNotNull()
+            )
 
-            // 描述
+            // 描述区域
             Text(
                 text = voiceActor.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                lineHeight = 18.sp
+                maxLines = 3, // 限制描述文本行数
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
 }
+
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CharacterCardUI(character: CharacterCard) {
     val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(295.dp)
-            .clickable { /* 点击进入详情 */ },
-        elevation = CardDefaults.cardElevation(8.dp),
+            .height(290.dp)
+            .combinedClickable(
+                onClick = { /* 普通点击处理 */ },
+                onLongClick = {
+                    context.copyToClipboard("${character.name}\n${character.japaneseName}")
+                }
+            ),
+        elevation = CardDefaults.cardElevation(4.dp),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -888,70 +891,77 @@ fun CharacterCardUI(character: CharacterCard) {
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 姓名部分，支持长按复制
-            Column(
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = { /* 普通点击不做任何事 */ },
-                        onLongClick = {
-                            context.copyToClipboard("${character.name}\n${character.japaneseName}")
-                        }
-                    )
-            ) {
-                Text(
-                    text = character.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = character.japaneseName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
+            // 名称区域
+            NameSection(
+                name = character.name,
+                japaneseName = character.japaneseName
+            )
 
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(
+            // 分割线
+            Divider(
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
                 thickness = 1.dp
             )
-            Spacer(modifier = Modifier.height(8.dp))
 
             // 信息网格
             GridLayout(
-                listOf(
+                listOfNotNull(
                     "生日" to character.birthday,
                     "年级" to character.schoolYear,
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 角色描述
+            // 描述区域
             Text(
                 text = character.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                lineHeight = 18.sp
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    lineHeight = 18.sp
+                ),
+                maxLines = 4, // 限制最大行数
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
 }
 
 @Composable
+private fun NameSection(name: String, japaneseName: String) {
+    Column {
+        Text(
+            text = name,
+            style = MaterialTheme.typography.titleLarge.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Text(
+            text = japaneseName,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                fontSize = 14.sp
+            )
+        )
+    }
+}
+
+
+@Composable
 private fun GridLayout(items: List<Pair<String, String>>) {
+    // 改为单列布局
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        for ((label, value) in items) {
+        // 直接遍历所有项目，不需要行列计算
+        items.forEach { item ->
             InfoItem(
-                label = label,
-                value = value,
+                label = item.first,
+                value = item.second,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -967,6 +977,7 @@ private fun InfoItem(
 ) {
     val context = LocalContext.current
 
+    // 调整高度和布局以适应单列
     Column(
         modifier = modifier
             .height(55.dp)

@@ -17,7 +17,7 @@ android {
         applicationId = "com.lovelive.dreamycolor"
         minSdk = 26
         targetSdk = 35
-        versionCode = generateVersionCode(2025, 2, 24)
+        versionCode = generateVersionCode(2025, 2, 25)
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
