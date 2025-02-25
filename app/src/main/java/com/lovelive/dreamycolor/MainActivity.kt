@@ -3,122 +3,87 @@
 package com.lovelive.dreamycolor
 
 import android.annotation.SuppressLint
-import android.os.Bundle
+import android.app.Application
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
-import kotlinx.coroutines.delay
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Button
-import androidx.compose.material3.AlertDialog
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.core.view.WindowCompat
-import androidx.compose.foundation.isSystemInDarkTheme
-import com.lovelive.dreamycolor.database.EncyclopediaDatabase
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Card
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModel
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.runtime.rememberCoroutineScope
-import com.lovelive.dreamycolor.data.repository.EncyclopediaRepository
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.HorizontalDivider
-import android.app.Application
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.background
-import com.lovelive.dreamycolor.model.CharacterCard
-import com.lovelive.dreamycolor.model.VoiceActorCard
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import android.content.Context
-import androidx.compose.ui.window.DialogProperties
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.foundation.layout.PaddingValues
-import com.lovelive.dreamycolor.utils.copyToClipboard
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.filled.HistoryEdu
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBar
-import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.material3.FloatingActionButton
-import android.content.Intent
-import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.view.WindowCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lovelive.dreamycolor.data.repository.EncyclopediaRepository
+import com.lovelive.dreamycolor.database.EncyclopediaDatabase
+import com.lovelive.dreamycolor.model.CharacterCard
+import com.lovelive.dreamycolor.model.VoiceActorCard
+import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
+import com.lovelive.dreamycolor.utils.copyToClipboard
+import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
+// 用于对话框配置的数据类
+data class DialogConfig(
+    val title: String,
+    val message: String,
+    val confirmText: String,
+    val confirmAction: () -> Unit,
+    val dismissText: String,
+    val dismissAction: () -> Unit
+)
 
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            val themeMode by settingsManager.themeModeFlow.collectAsState(initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM)
+            val themeMode by settingsManager.themeModeFlow.collectAsState(
+                initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM
+            )
             val textSize by settingsManager.textSizeFlow.collectAsState(
-                initial = SettingsManager.TextSize.FOLLOW_SYSTEM // 添加初始值
+                initial = SettingsManager.TextSize.FOLLOW_SYSTEM
             )
             val isDarkTheme = when (themeMode) {
                 SettingsManager.ThemeMode.LIGHT -> false
@@ -128,18 +93,18 @@ class MainActivity : ComponentActivity() {
 
             // 动态设置状态栏文字颜色
             LaunchedEffect(isDarkTheme) {
-                val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
-                windowInsetsController.isAppearanceLightStatusBars = !isDarkTheme
+                WindowCompat.getInsetsController(window, window.decorView).apply {
+                    isAppearanceLightStatusBars = !isDarkTheme
+                }
             }
 
             DreamyColorTheme(
                 themeMode = themeMode,
                 textSize = textSize
             ) {
-                // 状态控制启动页显示
-                var showSplash by remember { mutableStateOf(true) }
+                // 使用rememberSaveable保持屏幕旋转后的状态
+                var showSplash by rememberSaveable { mutableStateOf(true) }
 
-                // 实现淡入淡出动画：
                 Crossfade(
                     targetState = showSplash,
                     animationSpec = tween(800)
@@ -150,9 +115,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        MainContent(
-                            settingsManager = settingsManager
-                        )
+                        MainContent(settingsManager = settingsManager)
                     }
                 }
             }
@@ -171,7 +134,6 @@ fun SplashScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 逐字符竖排显示
             stringResource(R.string.splash_text).forEach { char ->
                 Text(
                     text = char.toString(),
@@ -181,63 +143,52 @@ fun SplashScreen(
             }
         }
 
-        // 自动关闭逻辑
         LaunchedEffect(Unit) {
-            delay(1500L) // 1.5秒延迟
-            onTimeout()  // 触发关闭
+            delay(1500L)
+            onTimeout()
         }
     }
 }
 
+
 // 主界面内容
 @Composable
 fun MainContent(settingsManager: SettingsManager) {
-    //val navController = rememberNavController() // 注释掉
-    val items = listOf(
-        Screen.Exclusive,
-        Screen.Inspiration,
-        Screen.Encyclopedia,
-        Screen.Profile
-    )
-    // 使用 rememberPagerState 来记住页面状态
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        initialPageOffsetFraction = 0f
-    ) {
-        // provide pageCount
-        items.size
+    val items = remember {
+        listOf(
+            Screen.Exclusive,
+            Screen.Inspiration,
+            Screen.Encyclopedia,
+            Screen.Profile
+        )
     }
 
+    // 使用rememberSaveable保持页面状态在配置更改时不丢失
+    val pagerState = rememberPagerState(pageCount = { items.size })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
             NavigationBar {
-                //val navBackStackEntry by navController.currentBackStackEntryAsState() // 注释
-                //val currentRoute = navBackStackEntry?.destination?.route //注释
-
                 items.forEachIndexed { index, screen ->
                     NavigationBarItem(
-                        icon = {}, // 不要图标
+                        icon = {},
                         label = {
+                            val textStyle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                MaterialTheme.typography.labelMedium
+                            } else {
+                                LocalTextStyle.current
+                            }
                             Text(
                                 text = stringResource(id = screen.titleRes),
-                                style = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    MaterialTheme.typography.labelMedium.copy(
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                } else {
-                                    LocalTextStyle.current.copy(
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                style = textStyle.copy(
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             )
                         },
                         selected = pagerState.currentPage == index,
                         onClick = {
-
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(index)
                             }
@@ -247,12 +198,10 @@ fun MainContent(settingsManager: SettingsManager) {
             }
         }
     ) { innerPadding ->
-        // 使用 HorizontalPager 替换 NavHost
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.padding(innerPadding)
         ) { page ->
-            // 根据页面索引显示不同的内容
             when (page) {
                 0 -> ExclusiveScreen()
                 1 -> InspirationScreen()
@@ -261,23 +210,14 @@ fun MainContent(settingsManager: SettingsManager) {
             }
         }
     }
-    //    LaunchedEffect(pagerState.currentPage) { //注释掉
-    //        // 根据 pagerState.currentPage 更新导航的选中状态
-    //        when (pagerState.currentPage) {
-    //            0 -> navController.navigate(Screen.Exclusive.route)
-    //            1 -> navController.navigate(Screen.Inspiration.route)
-    //            2 -> navController.navigate(Screen.Encyclopedia.route)
-    //            3 -> navController.navigate(Screen.Profile.route)
-    //        }
-    //    }
 }
 
 @Composable
 fun ExclusiveScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // 占位内容
     }
 }
-
 
 data class Website(
     val title: String,
@@ -293,10 +233,7 @@ private fun WebsiteCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(
-                onClick = onClick,
-                onClickLabel = "打开${website.title}"
-            ),
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
@@ -321,6 +258,7 @@ private fun WebsiteCard(
         }
     }
 }
+
 @Composable
 private fun WebsiteGrid(
     websites: List<Website>,
@@ -349,40 +287,37 @@ fun Context.openInBrowser(url: String) {
 }
 
 
+
 @Composable
 fun InspirationScreen() {
-
-    var showPlanetariumDialog by remember { mutableStateOf(false) }
-    var showTimeCapsuleDialog by remember { mutableStateOf(false) }
-    var showWishBottleDialog by remember { mutableStateOf(false) }
-    var showActivityRoomDialog by remember { mutableStateOf(false) }
-
-    val websites = listOf(
-        Website(
-            title = "缪斯时光蛋",
-            url = "dialog://timecapsule",
-            icon = Icons.Filled.HistoryEdu
-        ),
-        Website(
-            title = "Aqours许愿瓶",
-            url = "dialog://wishbottle",
-            icon = Icons.Filled.WaterDrop
-        ),
-        Website(
-            title = "虹之咲活动室",
-            url = "dialog://activityroom",
-            icon = Icons.Filled.Group
-        ),
-        Website(
-            title = "Liella星象馆",
-            url = "dialog://liella",
-            icon = Icons.Filled.Star
+    val websites = remember {
+        listOf(
+            Website(
+                title = "缪斯时光蛋",
+                url = "dialog://timecapsule",
+                icon = Icons.Filled.HistoryEdu
+            ),
+            Website(
+                title = "Aqours许愿瓶",
+                url = "dialog://wishbottle",
+                icon = Icons.Filled.WaterDrop
+            ),
+            Website(
+                title = "虹之咲活动室",
+                url = "dialog://activityroom",
+                icon = Icons.Filled.Group
+            ),
+            Website(
+                title = "Liella星象馆",
+                url = "dialog://liella",
+                icon = Icons.Filled.Star
+            )
         )
-    )
+    }
 
+    // 使用单一状态管理对话框显示
+    var dialogState by remember { mutableStateOf<String?>(null) }
     var currentScreen by remember { mutableStateOf<String?>(null) }
-
-    // 获取当前上下文
     val context = LocalContext.current
 
     Crossfade(
@@ -390,172 +325,116 @@ fun InspirationScreen() {
         animationSpec = tween(300)
     ) { screen ->
         when (screen) {
-            // 原星象馆的本地内容
             "internal://music_magazine" -> MusicMagazineScreen(onBack = { currentScreen = null })
-
-            // 新增的三个本地页面
             "internal://time_capsule" -> TimeCapsuleScreen(onBack = { currentScreen = null })
             "internal://wish_pool" -> WishPoolScreen(onBack = { currentScreen = null })
             "internal://activity_log" -> ActivityLogScreen(onBack = { currentScreen = null })
-
             null -> {
                 WebsiteGrid(
                     websites = websites,
                     onWebsiteClick = { url ->
                         when (url) {
-                            "dialog://liella" -> showPlanetariumDialog = true
-                            "dialog://timecapsule" -> showTimeCapsuleDialog = true
-                            "dialog://wishbottle" -> showWishBottleDialog = true
-                            "dialog://activityroom" -> showActivityRoomDialog = true
+                            "dialog://liella" -> dialogState = "liella"
+                            "dialog://timecapsule" -> dialogState = "timecapsule"
+                            "dialog://wishbottle" -> dialogState = "wishbottle"
+                            "dialog://activityroom" -> dialogState = "activityroom"
                         }
                     }
                 )
             }
-
             else -> {
-                    // 异常情况返回导航
-                    currentScreen = null
-                    WebsiteGrid(
-                        websites = websites,
-                        onWebsiteClick = { /* ... */ }
-                    )
-                }
+                currentScreen = null
+                WebsiteGrid(
+                    websites = websites,
+                    onWebsiteClick = { /* ... */ }
+                )
             }
         }
+    }
 
-    if (showPlanetariumDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showPlanetariumDialog = false },
-            title = { Text("进入星象馆") },
-            text = { Text("请选择您要进入的版本：") },
-            confirmButton = {
-                Button(onClick = {
+    // 合并对话框逻辑，减少重复代码
+    dialogState?.let { dialogType ->
+        val dialogConfig = when(dialogType) {
+            "liella" -> DialogConfig(
+                title = "进入星象馆",
+                message = "请选择您要进入的版本：",
+                confirmText = "官方网站",
+                confirmAction = {
                     context.openInBrowser("https://liella.club/")
-                    showPlanetariumDialog = false
-                }) {
-                    Text("官方网站")
-                }
-            },
-            dismissButton = {
-                Button(onClick = {
+                    dialogState = null
+                },
+                dismissText = "星象馆",
+                dismissAction = {
                     currentScreen = "internal://music_magazine"
-                    showPlanetariumDialog = false
-                }) {
-                    Text("星象馆")
+                    dialogState = null
                 }
-            }
-        )
-    }
-
-
-// 新增时光蛋对话框
-    if (showTimeCapsuleDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                // 点击对话框外部时只关闭对话框
-                showTimeCapsuleDialog = false
-            },
-            title = { Text("打开时光蛋") },
-            text = { Text("请选择操作：") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        context.openInBrowser("https://www.llhistoy.lionfree.net/lovelive.ws/index.html")
-                        showTimeCapsuleDialog = false
-                    }
-                ) {
-                    Text("官方网站")
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        currentScreen = "internal://time_capsule"
-                        showTimeCapsuleDialog = false
-                    }
-                ) {
-                    Text("本地存档")
-                }
-            },
-            properties = DialogProperties(
-                dismissOnClickOutside = true,
-                dismissOnBackPress = true
             )
-        )
-    }
-
-    // 新增许愿瓶对话框
-    if (showWishBottleDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                // 点击对话框外部时只关闭对话框
-                showWishBottleDialog = false
-            },
-            title = { Text("打开许愿瓶") },
-            text = { Text("请选择操作：") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        context.openInBrowser("https://aqours.tv/")
-                        showWishBottleDialog = false
-                    }
-                ) {
-                    Text("官方网站")
+            "timecapsule" -> DialogConfig(
+                title = "打开时光蛋",
+                message = "请选择操作：",
+                confirmText = "官方网站",
+                confirmAction = {
+                    context.openInBrowser("https://www.llhistoy.lionfree.net/lovelive.ws/index.html")
+                    dialogState = null
+                },
+                dismissText = "本地存档",
+                dismissAction = {
+                    currentScreen = "internal://time_capsule"
+                    dialogState = null
                 }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        currentScreen = "internal://wish_pool"
-                        showWishBottleDialog = false
-                    }
-                ) {
-                    Text("许愿池")
-                }
-            },
-            properties = DialogProperties(
-                dismissOnClickOutside = true,
-                dismissOnBackPress = true
             )
-        )
-    }
-
-
-// 新增活动室对话框
-    if (showActivityRoomDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                // 点击对话框外部时只关闭对话框
-                showActivityRoomDialog = false
-            },
-            title = { Text("进入活动室") },
-            text = { Text("请选择操作：") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        context.openInBrowser("https://nijigaku.club/")
-                        showActivityRoomDialog = false
-                    }
-                ) {
-                    Text("官方网站")
+            "wishbottle" -> DialogConfig(
+                title = "打开许愿瓶",
+                message = "请选择操作：",
+                confirmText = "官方网站",
+                confirmAction = {
+                    context.openInBrowser("https://aqours.tv/")
+                    dialogState = null
+                },
+                dismissText = "许愿池",
+                dismissAction = {
+                    currentScreen = "internal://wish_pool"
+                    dialogState = null
                 }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        currentScreen = "internal://activity_log"
-                        showActivityRoomDialog = false
-                    }
-                ) {
-                    Text("活动记录")
-                }
-            },
-            properties = DialogProperties(
-                dismissOnClickOutside = true,
-                dismissOnBackPress = true
             )
-        )
+            "activityroom" -> DialogConfig(
+                title = "进入活动室",
+                message = "请选择操作：",
+                confirmText = "官方网站",
+                confirmAction = {
+                    context.openInBrowser("https://nijigaku.club/")
+                    dialogState = null
+                },
+                dismissText = "活动记录",
+                dismissAction = {
+                    currentScreen = "internal://activity_log"
+                    dialogState = null
+                }
+            )
+            else -> null
+        }
+
+        dialogConfig?.let { config ->
+            AlertDialog(
+                onDismissRequest = { dialogState = null },
+                title = { Text(config.title) },
+                text = { Text(config.message) },
+                confirmButton = {
+                    Button(onClick = config.confirmAction) {
+                        Text(config.confirmText)
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = config.dismissAction) {
+                        Text(config.dismissText)
+                    }
+                },
+                properties = DialogProperties(
+                    dismissOnClickOutside = true,
+                    dismissOnBackPress = true
+                )
+            )
+        }
     }
 }
 
@@ -653,14 +532,12 @@ fun ActivityLogScreen(
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MusicMagazineScreen(
     onBack: () -> Unit
 ) {
     Column(Modifier.fillMaxSize()) {
-        // 保留顶部导航栏
         TopAppBar(
             title = { Text("🌟 星象馆") },
             navigationIcon = {
@@ -670,7 +547,6 @@ private fun MusicMagazineScreen(
             }
         )
 
-        // 简化后的内容区域
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -687,6 +563,7 @@ private fun MusicMagazineScreen(
     }
 }
 
+
 @Composable
 fun EncyclopediaScreen() {
     val context = LocalContext.current
@@ -694,10 +571,12 @@ fun EncyclopediaScreen() {
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
     val settingsManager = remember { SettingsManager(context) }
 
+    // 初始化数据库仅执行一次
     LaunchedEffect(Unit) {
         repository.initializeFromAssets(context)
     }
 
+    // 使用工厂方法创建ViewModel
     val viewModel: EncyclopediaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -710,16 +589,17 @@ fun EncyclopediaScreen() {
         }
     )
 
+    // 收集状态流
     val groupedCharacters by viewModel.getCharactersByGroup().collectAsState(initial = emptyMap())
     val groupedVoiceActors by viewModel.getVoiceActorsByGroup().collectAsState(initial = emptyMap())
-
-    var currentDimension by remember { mutableStateOf("角色") }
     val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
 
-    // 滚动状态和悬浮按钮可见性
+    // 维护UI状态
+    var currentDimension by rememberSaveable { mutableStateOf("角色") }
     val scrollState = rememberScrollState()
     var isFabVisible by remember { mutableStateOf(true) }
 
+    // 监听滚动状态控制FAB可见性
     LaunchedEffect(scrollState.isScrollInProgress) {
         if (scrollState.isScrollInProgress) {
             isFabVisible = false
@@ -735,7 +615,7 @@ fun EncyclopediaScreen() {
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // 固定标题区域 - 新增的固定部分
+            // 固定标题区域
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
@@ -750,11 +630,10 @@ fun EncyclopediaScreen() {
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Box(
-                            modifier = Modifier
-                                .background(
-                                    MaterialTheme.colorScheme.secondaryContainer,
-                                    MaterialTheme.shapes.medium
-                                )
+                            modifier = Modifier.background(
+                                MaterialTheme.colorScheme.secondaryContainer,
+                                MaterialTheme.shapes.medium
+                            )
                         ) {
                             Row(
                                 modifier = Modifier.padding(4.dp),
@@ -777,7 +656,7 @@ fun EncyclopediaScreen() {
                 }
             }
 
-            // 可滚动内容区域 - 与原结构分离
+            // 可滚动内容区域
             Column(
                 modifier = Modifier
                     .verticalScroll(scrollState)
@@ -786,36 +665,26 @@ fun EncyclopediaScreen() {
             ) {
                 if (currentDimension == "角色") {
                     groupedCharacters.forEach { (groupName, characters) ->
-                        Column {
-                            Text(
-                                text = groupName,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                            RegularVerticalGrid(items = characters) { character ->
+                        GroupSection(
+                            title = groupName,
+                            items = characters,
+                            itemContent = { character ->
                                 CharacterCardUI(character = character)
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
+                        )
                     }
                 } else {
                     groupedVoiceActors.forEach { (groupName, voiceActors) ->
-                        Column {
-                            Text(
-                                text = groupName,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                            RegularVerticalGrid(items = voiceActors) { actor ->
+                        GroupSection(
+                            title = groupName,
+                            items = voiceActors,
+                            itemContent = { actor ->
                                 VoiceActorCardUI(
                                     voiceActor = actor,
                                     showCoefficient = showCoefficient
                                 )
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
+                        )
                     }
                 }
             }
@@ -846,6 +715,26 @@ fun EncyclopediaScreen() {
 }
 
 @Composable
+fun <T> GroupSection(
+    title: String,
+    items: List<T>,
+    itemContent: @Composable (T) -> Unit
+) {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        RegularVerticalGrid(items = items) { item ->
+            itemContent(item)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
 private fun <T> RegularVerticalGrid(
     items: List<T>,
     columnCount: Int = 2,
@@ -868,10 +757,8 @@ private fun <T> RegularVerticalGrid(
                     }
                 }
                 // 补充空位
-                if (rowItems.size < columnCount) {
-                    repeat(columnCount - rowItems.size) {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
+                repeat(columnCount - rowItems.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -903,13 +790,14 @@ private fun DimensionButton(
     }
 }
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VoiceActorCardUI(
     voiceActor: VoiceActorCard,
-    showCoefficient: Boolean  // 新增的参数，表示是否显示 QJZ 系数
+    showCoefficient: Boolean
 ) {
-    val context = LocalContext.current // 添加这行来获取 context
+    val context = LocalContext.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -941,20 +829,19 @@ fun VoiceActorCardUI(
                             }
                         )
                 ) {
-                Text(
-                    text = voiceActor.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = voiceActor.japaneseName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
+                    Text(
+                        text = voiceActor.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = voiceActor.japaneseName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
             }
-            }
-
 
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(
@@ -964,7 +851,7 @@ fun VoiceActorCardUI(
             Spacer(modifier = Modifier.height(8.dp))
 
             // 显示信息项，包含生日、事务所及条件下的系数
-            val infoList = mutableListOf<Pair<String, String>>().apply {
+            val infoList = buildList {
                 add("生日" to voiceActor.birthday)
                 add("事务所" to voiceActor.agency)
                 if (showCoefficient) add("系数" to voiceActor.coefficient)
@@ -1004,7 +891,7 @@ fun CharacterCardUI(character: CharacterCard) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // 姓名部分
+            // 姓名部分，支持长按复制
             Column(
                 modifier = Modifier
                     .combinedClickable(
@@ -1118,25 +1005,24 @@ private fun InfoItem(
 
 @Composable
 fun ProfileScreen(settingsManager: SettingsManager) {
-// 状态管理
-    var showThemeDialog by remember { mutableStateOf(false) }
+    // 状态管理 - 使用rememberSaveable保持配置变更
+    var showThemeDialog by rememberSaveable { mutableStateOf(false) }
+    var showTextSizeDialog by rememberSaveable { mutableStateOf(false) }
+    var showDisclaimer by rememberSaveable { mutableStateOf(false) }
+    var remainingTime by remember { mutableIntStateOf(7) }
+    var showDarkRealmSnackbar by remember { mutableStateOf(false) }
+
+    // 状态收集
     val themeMode by settingsManager.themeModeFlow.collectAsState(
         initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM
     )
-    // 免责声明/隐藏功能相关状态：
-    var showDisclaimer by remember { mutableStateOf(false) }
-    var remainingTime by remember { mutableIntStateOf(7) }
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    // 新增：用于显示底部 Snackbar 提示的状态及 HostState
-    var showDarkRealmSnackbar by remember { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    var showTextSizeDialog by remember { mutableStateOf(false) } // 新增对话框状态
     val textSize by settingsManager.textSizeFlow.collectAsState(
         initial = SettingsManager.TextSize.FOLLOW_SYSTEM
     )
+
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // 主布局：使用垂直滚动以适应小屏幕
     Box(modifier = Modifier.fillMaxSize()) {
@@ -1150,15 +1036,19 @@ fun ProfileScreen(settingsManager: SettingsManager) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(40.dp))
+
             // 版本号条目（点击后满足条件触发免责声明）
             VersionEntry(
                 versionName = getVersionName(context),
                 onSecretActivated = { showDisclaimer = true }
             )
+
+            // 文字大小设置
             TextSizeSettingCard(
                 currentSize = textSize,
                 onClick = { showTextSizeDialog = true }
             )
+
             // 主题设置长条
             Card(
                 modifier = Modifier
@@ -1208,14 +1098,15 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                 }
             }
         }
-        // 将 SnackbarHost 放在 Box 的底部中间
+
+        // Snackbar主机
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
 
-    // 新增文字大小对话框
+    // 文字大小对话框
     if (showTextSizeDialog) {
         TextSizeSelectionDialog(
             currentSize = textSize,
@@ -1229,8 +1120,7 @@ fun ProfileScreen(settingsManager: SettingsManager) {
         )
     }
 
-
-// 主题选择对话框
+    // 主题选择对话框
     if (showThemeDialog) {
         ThemeSelectionDialog(
             currentMode = themeMode,
@@ -1242,7 +1132,8 @@ fun ProfileScreen(settingsManager: SettingsManager) {
             }
         )
     }
-    // 免责声明对话框，当连续点击版本号后弹出
+
+    // 免责声明对话框
     if (showDisclaimer) {
         DisclaimerDialog(
             remainingTime = remainingTime,
@@ -1251,7 +1142,6 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                     settingsManager.setShowCoefficient(true)
                 }
                 showDisclaimer = false
-                // 点击确认后设置状态以显示提示
                 showDarkRealmSnackbar = true
             },
             onDismiss = {
@@ -1262,7 +1152,8 @@ fun ProfileScreen(settingsManager: SettingsManager) {
             remainingTime = newTime
         }
     }
-    // 显示提示“您已进入黑暗领域”
+
+    // 显示提示"您已进入黑暗领域"
     if (showDarkRealmSnackbar) {
         LaunchedEffect(Unit) {
             snackbarHostState.showSnackbar("您已进入黑暗领域")
@@ -1270,6 +1161,7 @@ fun ProfileScreen(settingsManager: SettingsManager) {
         }
     }
 }
+
 
 @Composable
 private fun TextSizeSettingCard(
@@ -1325,6 +1217,7 @@ private fun TextSizeSettingCard(
         }
     }
 }
+
 @Composable
 private fun TextSizeSelectionDialog(
     currentSize: SettingsManager.TextSize,
@@ -1369,11 +1262,13 @@ private fun TextSizeSelectionDialog(
 }
 
 
+
 @Composable
 private fun VersionEntry(
     versionName: String,
     onSecretActivated: () -> Unit
 ) {
+    // 使用remember记住点击状态
     var clickCount by remember { mutableIntStateOf(0) }
     var lastClickTime by remember { mutableLongStateOf(0L) }
 
@@ -1425,6 +1320,7 @@ private fun VersionEntry(
         }
     }
 }
+
 @Composable
 private fun DisclaimerDialog(
     remainingTime: Int,
@@ -1469,15 +1365,18 @@ private fun DisclaimerDialog(
             }
         }
     )
+
     // 倒计时处理
     LaunchedEffect(Unit) {
-        repeat(7) {
+        for (i in 7 downTo 1) {
+            updateTime(i)
             delay(1000)
-            updateTime(7 - it - 1)
         }
+        updateTime(0)
     }
 }
 
+// 获取版本号的辅助函数
 private fun getVersionName(context: Context): String {
     return try {
         context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
@@ -1497,7 +1396,7 @@ fun ThemeSelectionDialog(
         title = { Text("选择主题") },
         text = {
             Column {
-                // 用 for 循环替代 forEach
+                // 使用for循环优化性能
                 for (mode in SettingsManager.ThemeMode.entries) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
