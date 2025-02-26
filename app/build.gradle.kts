@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlinx.serialization)
 }
 
 fun generateVersionCode(year: Int, month: Int, day: Int): Int {
@@ -17,7 +18,7 @@ android {
         applicationId = "com.lovelive.dreamycolor"
         minSdk = 26
         targetSdk = 35
-        versionCode = generateVersionCode(2025, 2, 25)
+        versionCode = generateVersionCode(2025, 2, 26)
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -83,6 +84,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.viewpager2)
     implementation(libs.gson)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.material.icons.extended)

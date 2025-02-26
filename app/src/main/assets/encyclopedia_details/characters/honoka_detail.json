@@ -1,0 +1,29 @@
+{
+  "characterName": "高坂穗乃果",
+  "basicInfo": {
+    "cvName": "新田惠海",
+    "group": "μ's",
+    "attribute": "元气",
+    "themeColor": "#FF99CC"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "南小鸟",
+        "type": "青梅竹马",
+        "description": "从小一起长大的挚友"
+      },
+      {
+        "target": "园田海未",
+        "type": "队友",
+        "description": "共同创立校园偶像的伙伴"
+      }
+    ],
+    "signatureAttacks": [
+      {
+        "name": "穗乃果冲击",
+        "description": "招牌元气动作"
+      }
+    ]
+  }
+}

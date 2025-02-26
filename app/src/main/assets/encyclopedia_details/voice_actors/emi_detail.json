@@ -1,0 +1,20 @@
+{
+  "voiceActorName": "新田惠海",
+  "career": {
+    "agency": "Sony Music Artists",
+    "debutYear": 2010,
+    "achievements": [
+      "第9回声优奖歌唱奖",
+      "LoveLive!系列主唱"
+    ]
+  },
+  "discography": {
+    "bestAlbum": "EMUSIC 〜遠くへ〜",
+    "characterSongs": [
+      {
+        "title": "START:DASH!!",
+        "character": "高坂穗乃果"
+      }
+    ]
+  }
+}
