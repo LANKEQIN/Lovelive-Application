@@ -2,7 +2,6 @@
 
 package com.lovelive.dreamycolor
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -61,7 +60,7 @@ import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import kotlin.math.ceil
+
 
 
 // 用于对话框配置的数据类
@@ -731,60 +730,6 @@ private fun GroupHeader(title: String) {
     )
 }
 
-
-
-
-@Composable
-fun <T> GroupSection(
-    title: String,
-    items: List<T>,
-    itemContent: @Composable (T) -> Unit
-) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-        RegularVerticalGrid(items = items) { item ->
-            itemContent(item)
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Composable
-private fun <T> RegularVerticalGrid(
-    items: List<T>,
-    columnCount: Int = 2,
-    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
-    content: @Composable (T) -> Unit
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        items.chunked(columnCount).forEach { rowItems ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                rowItems.forEach { item ->
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(bottom = 16.dp)
-                    ) {
-                        content(item)
-                    }
-                }
-                // 补充空位
-                repeat(columnCount - rowItems.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-    }
-}
-
 @Composable
 private fun DimensionButton(
     text: String,
@@ -845,15 +790,15 @@ fun VoiceActorCardUI(
                 japaneseName = voiceActor.japaneseName
             )
 
-            Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
             // 信息区域
             GridLayout(
-                listOf(
+                listOfNotNull(
                     "生日" to voiceActor.birthday,
                     "事务所" to voiceActor.agency,
                     if (showCoefficient) "系数" to voiceActor.coefficient else null
-                ).filterNotNull()
+                )
             )
 
             // 描述区域
@@ -902,9 +847,9 @@ fun CharacterCardUI(character: CharacterCard) {
             )
 
             // 分割线
-            Divider(
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                thickness = 1.dp
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
             )
 
             // 信息网格
