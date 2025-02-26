@@ -876,7 +876,7 @@ fun CharacterCardUI(character: CharacterCard) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(290.dp)
+            .height(290 .dp)
             .combinedClickable(
                 onClick = { /* 普通点击处理 */ },
                 onLongClick = {
