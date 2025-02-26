@@ -165,50 +165,86 @@ fun MainContent(settingsManager: SettingsManager) {
         )
     }
 
+    // 添加导航状态
+    var currentScreen by rememberSaveable { mutableStateOf<String?>(null) }
+    var characterName by rememberSaveable { mutableStateOf("") }
+    var voiceActorName by rememberSaveable { mutableStateOf("") }
+
     // 使用rememberSaveable保持页面状态在配置更改时不丢失
     val pagerState = rememberPagerState(pageCount = { items.size })
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                items.forEachIndexed { index, screen ->
-                    NavigationBarItem(
-                        icon = {},
-                        label = {
-                            val textStyle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                MaterialTheme.typography.labelMedium
-                            } else {
-                                LocalTextStyle.current
-                            }
-                            Text(
-                                text = stringResource(id = screen.titleRes),
-                                style = textStyle.copy(
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
+            // 只在主界面显示底部导航栏
+            if (currentScreen == null) {
+                NavigationBar {
+                    items.forEachIndexed { index, screen ->
+                        NavigationBarItem(
+                            icon = {},
+                            label = {
+                                val textStyle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    MaterialTheme.typography.labelMedium
+                                } else {
+                                    LocalTextStyle.current
+                                }
+                                Text(
+                                    text = stringResource(id = screen.titleRes),
+                                    style = textStyle.copy(
+                                        fontSize = 20.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 )
-                            )
-                        },
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+                            },
+                            selected = pagerState.currentPage == index,
+                            onClick = {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(index)
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        HorizontalPager(
-            state = pagerState,
+        // 使用Crossfade进行页面切换动画
+        Crossfade(
+            targetState = currentScreen,
             modifier = Modifier.padding(innerPadding)
-        ) { page ->
-            when (page) {
-                0 -> ExclusiveScreen()
-                1 -> InspirationScreen()
-                2 -> EncyclopediaScreen()
-                3 -> ProfileScreen(settingsManager)
+        ) { screen ->
+            when (screen) {
+                "character_detail" -> CharacterDetailScreen(
+                    characterName = characterName,
+                    onBackPressed = { currentScreen = null }
+                )
+                "voice_actor_detail" -> VoiceActorDetailScreen(
+                    voiceActorName = voiceActorName,
+                    onBackPressed = { currentScreen = null }
+                )
+                null -> {
+                    // 显示主界面
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        when (page) {
+                            0 -> ExclusiveScreen()
+                            1 -> InspirationScreen()
+                            2 -> EncyclopediaScreen(
+                                onCharacterClick = { name ->
+                                    characterName = name
+                                    currentScreen = "character_detail"
+                                },
+                                onVoiceActorClick = { name ->
+                                    voiceActorName = name
+                                    currentScreen = "voice_actor_detail"
+                                }
+                            )
+                            3 -> ProfileScreen(settingsManager)
+                        }
+                    }
+                }
             }
         }
     }
@@ -573,11 +609,18 @@ sealed class GroupItem {
 
 
 @Composable
-fun EncyclopediaScreen() {
+fun EncyclopediaScreen(
+    onCharacterClick: (String) -> Unit = {},
+    onVoiceActorClick: (String) -> Unit = {}
+) {
     val context = LocalContext.current
     val database = remember { EncyclopediaDatabase.getDatabase(context) }
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
     val settingsManager = remember { SettingsManager(context) }
+
+    // 添加对话框状态管理
+    var selectedCharacter by remember { mutableStateOf<CharacterCard?>(null) }
+    var selectedVoiceActor by remember { mutableStateOf<VoiceActorCard?>(null) }
 
     // 初始化数据库仅执行一次
     LaunchedEffect(Unit) {
@@ -683,10 +726,18 @@ fun EncyclopediaScreen() {
                 ) { item ->
                     when (item) {
                         is GroupItem.Header -> GroupHeader(item.title)
-                        is GroupItem.Character -> CharacterCardUI(character = item.data)
+                        is GroupItem.Character -> CharacterCardUI(
+                            character = item.data,
+                            onClick = { character ->
+                                selectedCharacter = character
+                            }
+                        )
                         is GroupItem.VoiceActor -> VoiceActorCardUI(
                             voiceActor = item.data,
-                            showCoefficient = showCoefficient
+                            showCoefficient = showCoefficient,
+                            onClick = { voiceActor ->
+                                selectedVoiceActor = voiceActor
+                            }
                         )
                     }
                 }
@@ -714,6 +765,40 @@ fun EncyclopediaScreen() {
                 )
             }
         }
+    }
+
+    // 角色详情对话框
+    selectedCharacter?.let { character ->
+        CharacterOptionsDialog(
+            character = character,
+            onDismiss = { selectedCharacter = null },
+            onLocalPageClick = {
+                selectedCharacter = null
+                onCharacterClick(character.name)
+            },
+            onExternalWikiClick = {
+                selectedCharacter = null
+                val url = "https://mzh.moegirl.org.cn/${character.name}"
+                context.openInBrowser(url)
+            }
+        )
+    }
+
+    // 声优详情对话框
+    selectedVoiceActor?.let { voiceActor ->
+        VoiceActorOptionsDialog(
+            voiceActor = voiceActor,
+            onDismiss = { selectedVoiceActor = null },
+            onLocalPageClick = {
+                selectedVoiceActor = null
+                onVoiceActorClick(voiceActor.name)
+            },
+            onExternalWikiClick = {
+                selectedVoiceActor = null
+                val url = "https://mzh.moegirl.org.cn/${voiceActor.name}"
+                context.openInBrowser(url)
+            }
+        )
     }
 }
 
@@ -755,12 +840,60 @@ private fun DimensionButton(
     }
 }
 
+@Composable
+fun CharacterOptionsDialog(
+    character: CharacterCard,
+    onDismiss: () -> Unit,
+    onLocalPageClick: () -> Unit,
+    onExternalWikiClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("查看${character.name}的详细信息") },
+        text = { Text("请选择查看方式：") },
+        confirmButton = {
+            Button(onClick = onLocalPageClick) {
+                Text("本地页面")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onExternalWikiClick) {
+                Text("萌娘百科")
+            }
+        }
+    )
+}
+
+@Composable
+fun VoiceActorOptionsDialog(
+    voiceActor: VoiceActorCard,
+    onDismiss: () -> Unit,
+    onLocalPageClick: () -> Unit,
+    onExternalWikiClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("查看${voiceActor.name}的详细信息") },
+        text = { Text("请选择查看方式：") },
+        confirmButton = {
+            Button(onClick = onLocalPageClick) {
+                Text("本地页面")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onExternalWikiClick) {
+                Text("萌娘百科")
+            }
+        }
+    )
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VoiceActorCardUI(
     voiceActor: VoiceActorCard,
-    showCoefficient: Boolean
+    showCoefficient: Boolean,
+    onClick: (VoiceActorCard) -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -769,8 +902,12 @@ fun VoiceActorCardUI(
             .fillMaxWidth()
             .height(290.dp)
             .combinedClickable(
-                onClick = { /* 普通点击处理 */ },
+                onClick = {
+                    // 普通点击显示选项对话框
+                    onClick(voiceActor)
+                },
                 onLongClick = {
+                    // 长按复制名称
                     context.copyToClipboard("${voiceActor.name}\n${voiceActor.japaneseName}")
                 }
             ),
@@ -815,16 +952,24 @@ fun VoiceActorCardUI(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CharacterCardUI(character: CharacterCard) {
+fun CharacterCardUI(
+    character: CharacterCard,
+    onClick: (CharacterCard) -> Unit = {}
+) {
     val context = LocalContext.current
+
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(290 .dp)
+            .height(290.dp)
             .combinedClickable(
-                onClick = { /* 普通点击处理 */ },
+                onClick = {
+                    // 普通点击显示选项对话框
+                    onClick(character)
+                },
                 onLongClick = {
+                    // 长按复制名称
                     context.copyToClipboard("${character.name}\n${character.japaneseName}")
                 }
             ),
