@@ -1,0 +1,23 @@
+{
+  "characterName": "园田海未",
+  "basicInfo": {
+    "cvName": "三森铃子",
+    "group": "μ's",
+    "attribute": "坚毅",
+    "themeColor": "#0075C2"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "高坂穗乃果",
+        "type": "挚友",
+        "description": "共同创立校园偶像的伙伴"
+      },
+      {
+        "target": "南小鸟",
+        "type": "挚友",
+        "description": "青梅竹马的好友"
+      }
+    ]
+  }
+}

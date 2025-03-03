@@ -1,0 +1,18 @@
+{
+  "characterName": "津岛善子",
+  "basicInfo": {
+    "cvName": "小林爱香",
+    "group": "Aqours",
+    "attribute": "中二",
+    "themeColor": "#9400D3"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "国木田花丸",
+        "type": "同班同学",
+        "description": "共同探索「堕天使」设定的搭档"
+      }
+    ]
+  }
+}

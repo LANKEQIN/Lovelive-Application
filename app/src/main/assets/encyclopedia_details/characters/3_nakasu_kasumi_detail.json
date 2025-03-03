@@ -1,0 +1,18 @@
+{
+  "characterName": "中须霞",
+  "basicInfo": {
+    "cvName": "相良茉優",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "可爱",
+    "themeColor": "#FFFF00"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "优木雪菜",
+        "type": "竞争对手",
+        "description": "将优木雪菜视为对手，想要争夺第一偶像的位置"
+      }
+    ]
+  }
+}

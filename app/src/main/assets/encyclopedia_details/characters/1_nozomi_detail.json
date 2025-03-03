@@ -1,0 +1,23 @@
+{
+  "characterName": "东条希",
+  "basicInfo": {
+    "cvName": "楠田亚衣奈",
+    "group": "μ's",
+    "attribute": "神秘",
+    "themeColor": "#84329B"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "绚濑绘里",
+        "type": "挚友",
+        "description": "青梅竹马的好友，学生会工作的搭档"
+      },
+      {
+        "target": "矢泽妮可",
+        "type": "伙伴",
+        "description": "同为三年级生，经常一起行动"
+      }
+    ]
+  }
+}

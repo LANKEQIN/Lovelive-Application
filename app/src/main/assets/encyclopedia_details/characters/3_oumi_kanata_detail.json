@@ -1,0 +1,23 @@
+{
+  "characterName": "近江彼方",
+  "basicInfo": {
+    "cvName": "鬼頭明里",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "困倦",
+    "themeColor": "#A0522D"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "近江遥",
+        "type": "姐妹",
+        "description": "为了妹妹近江遥而努力成为学园偶像"
+      },
+      {
+        "target": "朝香果林",
+        "type": "室友",
+        "description": "与朝香果林是宿舍室友，互相照顾"
+      }
+    ]
+  }
+}

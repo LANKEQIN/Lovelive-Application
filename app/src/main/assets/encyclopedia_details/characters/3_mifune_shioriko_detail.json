@@ -1,0 +1,18 @@
+{
+  "characterName": "三船栞子",
+  "basicInfo": {
+    "cvName": "小泉萌香",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "学院",
+    "themeColor": "#000080"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "钟岚珠",
+        "type": "竞争对手",
+        "description": "将钟岚珠视为竞争对手，想要证明自己的实力"
+      }
+    ]
+  }
+}

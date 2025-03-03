@@ -35,9 +35,41 @@ fun CharacterDetailScreen(
     LaunchedEffect(characterName) {
         // 根据角色名称确定要加载的JSON文件
         val fileName = when (characterName) {
-            "高坂穗乃果" -> "honoka_detail.json"
-            "南小鸟" -> "kotori_detail.json"
-            // 添加更多角色
+            "高坂穗乃果" -> "1_honoka_detail.json"
+            "南小鸟" -> "1_kotori_detail.json"
+            "园田海未" -> "1_umi_detail.json"
+            "星空凛" -> "1_rin_detail.json"
+            "小泉花阳" -> "1_hanayo_detail.json"
+            "西木野真姬" -> "1_maki_detail.json"
+            "矢泽妮可" -> "1_nico_detail.json"
+            "绚濑绘里" -> "1_eli_detail.json"
+            "东条希" -> "1_nozomi_detail.json"
+
+            "樱内梨子" -> "2_riko_detail.json"
+            "高海千歌"  -> "2_chika_detail.json"
+            "渡边曜"   -> "2_you_detail.json"
+            "松浦果南"  -> "2_kanan_detail.json"
+            "黑泽黛雅"  -> "2_dia_detail.json"
+            "小原鞠莉" -> "2_mari_detail.json"
+            "津岛善子" -> "2_yoshiko_detail.json"
+            "国木田花丸" -> "2_hanamaru_detail.json"
+            "黑泽露比"  -> "2_rubi_detail.json"
+
+            "高咲侑" -> "3_takasaki_yuu_detail.json"
+            "上原步梦"  -> "3_uehara_ayumu_detail.json"
+            "中须霞"   -> "3_nakasu_kasumi_detail.json"
+            "樱坂雫" -> "3_osaka_shizuku_detail.json"
+            "朝香果林" -> "3_asaka_karin_detail.json"
+            "宫下爱" -> "3_miyashita_ai_detail.json"
+            "近江彼方" -> "3_oumi_kanat_detail.json"
+            "艾玛·维尔德" -> "3_emma_verde_detail.json"
+            "天王寺璃奈" -> "3_tennouji_rina_detail.json"
+            "三船栞子" -> "3_mifune_shioriko_detail.json"
+            "钟岚珠" -> "3_zhong_lanzhu_detail.json"
+            "米雅·泰勒" -> "3_mia_taylor_detail.json"
+            "优木雪菜" -> "3_yuuki_setsuna_detail.json"
+
+
             else -> null
         }
 

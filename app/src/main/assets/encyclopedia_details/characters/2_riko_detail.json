@@ -1,0 +1,23 @@
+{
+  "characterName": "樱内梨子",
+  "basicInfo": {
+    "cvName": "逢田梨香子",
+    "group": "Aqours",
+    "attribute": "知性",
+    "themeColor": "#FF69B4"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "高海千歌",
+        "type": "挚友",
+        "description": "被千歌的热情感染加入Aqours"
+      },
+      {
+        "target": "松浦果南",
+        "type": "音乐伙伴",
+        "description": "经常共同进行作曲活动"
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "characterName": "米雅·泰勒",
+  "basicInfo": {
+    "cvName": "村上奈津实",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "清纯",
+    "themeColor": "#FFD700"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "艾玛·维尔德",
+        "type": "憧憬的前辈",
+        "description": "非常憧憬艾玛，视其为重要的前辈和学习对象"
+      },
+      {
+        "target": "钟岚珠",
+        "type": "亦敌亦友",
+        "description": "与钟岚珠关系复杂，既是竞争对手也是互相认可的朋友"
+      },
+      {
+        "target": "高咲侑",
+        "type": "重要的制作人",
+        "description": "非常信任和依赖高咲侑，认为她是重要的制作人"
+      }
+    ]
+  }
+}

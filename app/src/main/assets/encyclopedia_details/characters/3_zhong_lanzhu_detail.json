@@ -1,0 +1,18 @@
+{
+  "characterName": "钟岚珠",
+  "basicInfo": {
+    "cvName": "法元明菜",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "华丽",
+    "themeColor": "#DA70D6"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "三船栞子",
+        "type": "竞争对手",
+        "description": "与三船栞子互相竞争，都想成为顶尖偶像"
+      }
+    ]
+  }
+}

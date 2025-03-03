@@ -1,0 +1,23 @@
+{
+  "characterName": "绚濑绘里",
+  "basicInfo": {
+    "cvName": "南条爱乃",
+    "group": "μ's",
+    "attribute": "优雅",
+    "themeColor": "#33B7E8"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "东条希",
+        "type": "挚友",
+        "description": "青梅竹马的好友，学生会副会长"
+      },
+      {
+        "target": "高坂穗乃果",
+        "type": "伙伴",
+        "description": "被其热情感染加入μ's的契机"
+      }
+    ]
+  }
+}

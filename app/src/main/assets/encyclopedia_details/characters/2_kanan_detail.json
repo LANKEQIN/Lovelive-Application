@@ -1,0 +1,18 @@
+{
+  "characterName": "松浦果南",
+  "basicInfo": {
+    "cvName": "诹访七香",
+    "group": "Aqours",
+    "attribute": "冷静",
+    "themeColor": "#1E90FF"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "樱内梨子",
+        "type": "音乐伙伴",
+        "description": "共同创作多首歌曲"
+      }
+    ]
+  }
+}

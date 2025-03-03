@@ -1,0 +1,25 @@
+{
+  "voiceActorName": "小泉萌香",
+  "career": {
+    "agency": "Amuse",
+    "debutYear": 2017,
+    "achievements": [
+      "Love Live! Nijigasaki High School Idol Club 三船栞子 声优",
+      "以其沉稳的声线和知性的形象而受到关注",
+      "也参与舞台剧和音乐剧的演出"
+    ]
+  },
+  "discography": {
+    "bestAlbum": "N/A",
+    "characterSongs": [
+      {
+        "title": "決意の光",
+        "character": "三船栞子"
+      },
+      {
+        "title": "EMOTION",
+        "character": "三船栞子"
+      }
+    ]
+  }
+}

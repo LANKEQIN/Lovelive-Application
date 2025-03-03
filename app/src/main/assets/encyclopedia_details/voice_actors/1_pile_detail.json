@@ -1,0 +1,20 @@
+{
+  "voiceActorName": "Pile",
+  "career": {
+    "agency": "SPACEY MUSIC ENTERTAINMENT",
+    "debutYear": 2006,
+    "achievements": [
+      "第8回声优奖新人女优奖",
+      "Love Live! μ's Final LoveLive! 演唱会参演"
+    ]
+  },
+  "discography": {
+    "bestAlbum": "Jewel Vox",
+    "characterSongs": [
+      {
+        "title": "爱的旋律",
+        "character": "西木野真姬"
+      }
+    ]
+  }
+}

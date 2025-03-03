@@ -1,0 +1,18 @@
+{
+  "characterName": "黑泽黛雅",
+  "basicInfo": {
+    "cvName": "小宫有纱",
+    "group": "Aqours",
+    "attribute": "优雅",
+    "themeColor": "#FF1493"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "黑泽露比",
+        "type": "姐妹",
+        "description": "严格但关怀妹妹的姐姐"
+      }
+    ]
+  }
+}

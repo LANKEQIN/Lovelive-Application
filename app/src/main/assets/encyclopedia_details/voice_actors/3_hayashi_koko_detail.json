@@ -1,0 +1,25 @@
+{
+  "voiceActorName": "林鼓子",
+  "career": {
+    "agency": "81プロデュース",
+    "debutYear": 2014,
+    "achievements": [
+      "Wake Up, Girls!  林田藍里 声优 出道",
+      "声优偶像组合 Run Girls, Run!  成员",
+      "以充满活力的声音和开朗的性格受到喜爱"
+    ]
+  },
+  "discography": {
+    "bestAlbum": "N/A",
+    "characterSongs": [
+      {
+        "title": "7 Girls War",
+        "character": "林田藍里 (Wake Up, Girls!)"
+      },
+      {
+        "title": "キラッとスタート",
+        "character": "Run Girls, Run!"
+      }
+    ]
+  }
+}

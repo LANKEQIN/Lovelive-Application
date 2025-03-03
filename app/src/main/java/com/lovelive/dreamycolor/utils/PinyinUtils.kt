@@ -168,7 +168,7 @@ object PinyinUtils {
         "高咲侑" to "Gāo Xiào Yòu",
         "上原步梦" to "Shàng Yuán Bù Mèng",
         "中须霞" to "Zhōng Xū Xiá",
-        "樱坂雫" to "Yīng Bǎn Dí",
+        "樱坂雫" to "Yīng Bǎn Nǎ",
         "朝香果林" to "Cháo Xiāng Guǒ Lín",
         "宫下爱" to "Gōng Xià Ài",
         "近江彼方" to "Jìn Jiāng Bǐ Fāng",

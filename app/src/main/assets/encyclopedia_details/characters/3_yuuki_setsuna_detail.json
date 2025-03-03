@@ -1,0 +1,18 @@
+{
+  "characterName": "优木雪菜",
+  "basicInfo": {
+    "cvName": "楠木灯/林鼓子",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "热情",
+    "themeColor": "#FF0000"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "高咲侑",
+        "type": "理解者",
+        "description": "非常感谢高咲侑对作为偶像和作为“菜々”的自己的理解和支持"
+      }
+    ]
+  }
+}

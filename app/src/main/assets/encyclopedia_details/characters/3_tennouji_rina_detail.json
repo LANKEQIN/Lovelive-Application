@@ -1,0 +1,18 @@
+{
+  "characterName": "天王寺璃奈",
+  "basicInfo": {
+    "cvName": "田中ちえ美",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "科技",
+    "themeColor": "#708090"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "ミア・テイラー",
+        "type": "朋友",
+        "description": "和同为技术宅的米娅·泰勒意气相投"
+      }
+    ]
+  }
+}

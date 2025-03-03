@@ -1,0 +1,23 @@
+{
+  "characterName": "小泉花阳",
+  "basicInfo": {
+    "cvName": "久保由利香",
+    "group": "μ's",
+    "attribute": "纯真",
+    "themeColor": "#64B870"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "星空凛",
+        "type": "青梅竹马",
+        "description": "从小学就在一起的挚友"
+      },
+      {
+        "target": "小鸟游花音",
+        "type": "偶像同好",
+        "description": "共同喜欢偶像的好友"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "characterName": "高海千歌",
+  "basicInfo": {
+    "cvName": "伊波杏树",
+    "group": "Aqours",
+    "attribute": "元气",
+    "themeColor": "#FF4500"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "樱内梨子",
+        "type": "挚友",
+        "description": "邀请梨子加入Aqours的核心人物"
+      }
+    ]
+  }
+}

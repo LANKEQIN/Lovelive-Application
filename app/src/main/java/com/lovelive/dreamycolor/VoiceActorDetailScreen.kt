@@ -34,9 +34,26 @@ fun VoiceActorDetailScreen(
     LaunchedEffect(voiceActorName) {
         // 根据声优名称确定要加载的JSON文件
         val fileName = when (voiceActorName) {
-            "新田惠海" -> "emi_detail.json"
-            "内田彩" -> "uchida_detail.json"
-            // 添加更多声优
+            "新田惠海" -> "1_emi_detail.json"
+            "内田彩" -> "1_uchida_detail.json"
+            "三森铃子" -> "1_mimori_detail.json"
+            "饭田里穗" -> "1_iida_detail.json"
+            "久保由利香" -> "1_kubo_detail.json"
+            "Pile" -> "1_pile_detail.json"
+            "德井青空" -> "1_tokui_detail.json"
+            "南条爱乃" -> "1_nanjou_detail.json"
+            "楠田亚衣奈" -> "1_kusuda_detail.json"
+
+            "逢田梨香子" -> "2_aida_rikako_detail.json"
+            "伊波杏树"  -> "2_inami_anju_detail.json"
+            "齐藤朱夏"  -> "2_saito_shuka_detail.json"
+            "诹访奈奈香"  -> "2_suwa_nanaka_detail.json"
+            "小宫有纱" -> "2_komiya_arisha_detail.json"
+            "铃木爱奈" -> "2_suzuki_aina_detail.json"
+            "小林爱香" -> "2_kobayashi_aika_detail.json"
+            "高槻加奈子" -> "2_takatsuki_kanako_detail.json"
+            "降幡爱" -> "2_furihata_ai_detail.json"
+
             else -> null
         }
 

@@ -1,0 +1,23 @@
+{
+  "characterName": "西木野真姬",
+  "basicInfo": {
+    "cvName": "Pile",
+    "group": "μ's",
+    "attribute": "傲娇",
+    "themeColor": "#EE2737"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "星空凛",
+        "type": "队友",
+        "description": "同年级的好友"
+      },
+      {
+        "target": "矢泽妮可",
+        "type": "音乐搭档",
+        "description": "共同创作μ's的歌曲"
+      }
+    ]
+  }
+}

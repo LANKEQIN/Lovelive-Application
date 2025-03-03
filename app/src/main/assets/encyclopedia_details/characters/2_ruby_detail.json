@@ -1,0 +1,18 @@
+{
+  "characterName": "黑泽露比",
+  "basicInfo": {
+    "cvName": "降幡爱",
+    "group": "Aqours",
+    "attribute": "害羞",
+    "themeColor": "#FFB6C1"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "黑泽黛雅",
+        "type": "姐妹",
+        "description": "崇拜并依赖姐姐的妹妹"
+      }
+    ]
+  }
+}

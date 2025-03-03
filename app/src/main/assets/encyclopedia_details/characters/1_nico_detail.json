@@ -1,0 +1,23 @@
+{
+  "characterName": "矢泽妮可",
+  "basicInfo": {
+    "cvName": "德井青空",
+    "group": "μ's",
+    "attribute": "元气",
+    "themeColor": "#E31C79"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "西木野真姬",
+        "type": "音乐搭档",
+        "description": "共同创作μ's的歌曲"
+      },
+      {
+        "target": "绚濑绘里",
+        "type": "同级生",
+        "description": "同为三年级的伙伴"
+      }
+    ]
+  }
+}

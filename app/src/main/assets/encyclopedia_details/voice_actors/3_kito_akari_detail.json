@@ -1,0 +1,25 @@
+{
+  "voiceActorName": "鬼头明里",
+  "career": {
+    "agency": "Pro Fit",
+    "debutYear": 2014,
+    "achievements": [
+      "Love Live! Nijigasaki High School Idol Club 近江彼方 声优",
+      "同时也是一位活跃的歌手，拥有多张个人单曲和专辑",
+      "出演多部人气动画作品，如《鬼灭之刃》的灶门祢豆子"
+    ]
+  },
+  "discography": {
+    "bestAlbum": "STYLE",
+    "characterSongs": [
+      {
+        "title": "眠り姫",
+        "character": "近江彼方"
+      },
+      {
+        "title": "Butterfly",
+        "character": "近江彼方"
+      }
+    ]
+  }
+}

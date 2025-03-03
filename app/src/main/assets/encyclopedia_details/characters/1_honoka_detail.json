@@ -1,0 +1,23 @@
+{
+  "characterName": "高坂穗乃果",
+  "basicInfo": {
+    "cvName": "新田惠海",
+    "group": "μ's",
+    "attribute": "元气",
+    "themeColor": "#F38500"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "南小鸟",
+        "type": "青梅竹马",
+        "description": "从小一起长大的挚友"
+      },
+      {
+        "target": "园田海未",
+        "type": "队友",
+        "description": "共同创立校园偶像的伙伴"
+      }
+    ]
+  }
+}

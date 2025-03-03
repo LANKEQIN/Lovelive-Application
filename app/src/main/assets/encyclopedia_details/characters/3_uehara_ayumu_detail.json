@@ -1,0 +1,18 @@
+{
+  "characterName": "上原步梦",
+  "basicInfo": {
+    "cvName": "大西亜玖璃",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "闪耀",
+    "themeColor": "#FF69B4"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "高咲侑",
+        "type": "重要的人",
+        "description": "憧憬和重要的青梅竹马"
+      }
+    ]
+  }
+}

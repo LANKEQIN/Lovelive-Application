@@ -1,0 +1,23 @@
+{
+  "characterName": "高咲侑",
+  "basicInfo": {
+    "cvName": "矢野妃菜喜",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "活力",
+    "themeColor": "#FFA07A"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "上原步梦",
+        "type": "青梅竹马/挚友",
+        "description": "是步梦的青梅竹马，两人之间有着深厚的友谊"
+      },
+      {
+        "target": "近江彼方",
+        "type": "朋友/前辈",
+        "description": "彼方像姐姐一样关照着侑"
+      }
+    ]
+  }
+}

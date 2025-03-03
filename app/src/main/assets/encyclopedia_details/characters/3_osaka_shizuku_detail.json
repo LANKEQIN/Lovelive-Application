@@ -1,0 +1,18 @@
+{
+  "characterName": "樱坂雫",
+  "basicInfo": {
+    "cvName": "前田佳織里",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "优雅",
+    "themeColor": "#87CEFA"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "上原歩夢",
+        "type": "憧憬",
+        "description": "憧憬着闪耀的上原歩夢，并努力追赶她的脚步"
+      }
+    ]
+  }
+}

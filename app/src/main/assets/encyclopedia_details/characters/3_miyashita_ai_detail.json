@@ -1,0 +1,18 @@
+{
+  "characterName": "宫下爱",
+  "basicInfo": {
+    "cvName": "村上奈津実",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "元气",
+    "themeColor": "#FFA500"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "同好会成员",
+        "type": "朋友",
+        "description": "和同好会的所有成员都是好朋友，喜欢热闹"
+      }
+    ]
+  }
+}

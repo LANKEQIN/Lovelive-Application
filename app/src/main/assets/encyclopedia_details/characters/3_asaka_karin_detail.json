@@ -1,0 +1,18 @@
+{
+  "characterName": "朝香果林",
+  "basicInfo": {
+    "cvName": "久保田未夢",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "性感",
+    "themeColor": "#800080"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "近江彼方",
+        "type": "室友",
+        "description": "与近江彼方是宿舍室友，互相理解和支持"
+      }
+    ]
+  }
+}

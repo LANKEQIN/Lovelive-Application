@@ -1,0 +1,23 @@
+{
+  "characterName": "星空凛",
+  "basicInfo": {
+    "cvName": "饭田里穗",
+    "group": "μ's",
+    "attribute": "活力",
+    "themeColor": "#FFB930"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "小泉花阳",
+        "type": "青梅竹马",
+        "description": "从小学就在一起的挚友"
+      },
+      {
+        "target": "西木野真姬",
+        "type": "队友",
+        "description": "同年级的好友"
+      }
+    ]
+  }
+}

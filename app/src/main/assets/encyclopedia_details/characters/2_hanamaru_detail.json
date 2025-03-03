@@ -1,0 +1,18 @@
+{
+  "characterName": "国木田花丸",
+  "basicInfo": {
+    "cvName": "高槻加奈子",
+    "group": "Aqours",
+    "attribute": "温柔",
+    "themeColor": "#FFD700"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "津岛善子",
+        "type": "挚友",
+        "description": "共同经营「夜羽与花丸」广播节目"
+      }
+    ]
+  }
+}

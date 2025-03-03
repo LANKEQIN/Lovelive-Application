@@ -1,0 +1,18 @@
+{
+  "characterName": "渡边曜",
+  "basicInfo": {
+    "cvName": "齐藤朱夏",
+    "group": "Aqours",
+    "attribute": "活泼",
+    "themeColor": "#00BFFF"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "高海千歌",
+        "type": "同学",
+        "description": "共同实现校园偶像梦想的伙伴"
+      }
+    ]
+  }
+}

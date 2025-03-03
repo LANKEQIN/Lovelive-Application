@@ -1,0 +1,18 @@
+{
+  "characterName": "艾玛·维尔德",
+  "basicInfo": {
+    "cvName": "指出毬亜",
+    "group": "虹咲学园偶像同好会",
+    "attribute": "自然",
+    "themeColor": "#008000"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "同好会成员",
+        "type": "治愈系",
+        "description": "用温柔的笑容和歌声治愈着同好会的成员们"
+      }
+    ]
+  }
+}
