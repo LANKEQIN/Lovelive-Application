@@ -61,6 +61,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 
+import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
+import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
+import net.sourceforge.pinyin4j.format.HanyuPinyinToneType
+import net.sourceforge.pinyin4j.PinyinHelper
+import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination
+import com.lovelive.dreamycolor.utils.PinyinUtils
+import androidx.compose.ui.text.TextStyle
 
 
 // 用于对话框配置的数据类
@@ -250,356 +257,16 @@ fun MainContent(settingsManager: SettingsManager) {
     }
 }
 
-@Composable
-fun ExclusiveScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        // 占位内容
-    }
-}
 
-data class Website(
-    val title: String,
-    val url: String,
-    val icon: ImageVector
-)
 
-@Composable
-private fun WebsiteCard(
-    website: Website,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = website.icon,
-                contentDescription = website.title,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = website.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@Composable
-private fun WebsiteGrid(
-    websites: List<Website>,
-    onWebsiteClick: (String) -> Unit
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        items(websites) { website ->
-            WebsiteCard(
-                website = website,
-                onClick = { onWebsiteClick(website.url) }
-            )
-        }
-    }
-}
-
-// 扩展函数
-fun Context.openInBrowser(url: String) {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-    startActivity(intent)
-}
+// Website数据类和相关函数已迁移到InspirationScreen.kt
 
 
 
-@Composable
-fun InspirationScreen() {
-    val websites = remember {
-        listOf(
-            Website(
-                title = "缪斯时光蛋",
-                url = "dialog://timecapsule",
-                icon = Icons.Filled.HistoryEdu
-            ),
-            Website(
-                title = "Aqours许愿瓶",
-                url = "dialog://wishbottle",
-                icon = Icons.Filled.WaterDrop
-            ),
-            Website(
-                title = "虹之咲活动室",
-                url = "dialog://activityroom",
-                icon = Icons.Filled.Group
-            ),
-            Website(
-                title = "Liella星象馆",
-                url = "dialog://liella",
-                icon = Icons.Filled.Star
-            )
-        )
-    }
-
-    // 使用单一状态管理对话框显示
-    var dialogState by remember { mutableStateOf<String?>(null) }
-    var currentScreen by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
-
-    Crossfade(
-        targetState = currentScreen,
-        animationSpec = tween(300)
-    ) { screen ->
-        when (screen) {
-            "internal://music_magazine" -> MusicMagazineScreen(onBack = { currentScreen = null })
-            "internal://time_capsule" -> TimeCapsuleScreen(onBack = { currentScreen = null })
-            "internal://wish_pool" -> WishPoolScreen(onBack = { currentScreen = null })
-            "internal://activity_log" -> ActivityLogScreen(onBack = { currentScreen = null })
-            null -> {
-                WebsiteGrid(
-                    websites = websites,
-                    onWebsiteClick = { url ->
-                        when (url) {
-                            "dialog://liella" -> dialogState = "liella"
-                            "dialog://timecapsule" -> dialogState = "timecapsule"
-                            "dialog://wishbottle" -> dialogState = "wishbottle"
-                            "dialog://activityroom" -> dialogState = "activityroom"
-                        }
-                    }
-                )
-            }
-            else -> {
-                currentScreen = null
-                WebsiteGrid(
-                    websites = websites,
-                    onWebsiteClick = { /* ... */ }
-                )
-            }
-        }
-    }
-
-    // 合并对话框逻辑，减少重复代码
-    dialogState?.let { dialogType ->
-        val dialogConfig = when(dialogType) {
-            "liella" -> DialogConfig(
-                title = "进入星象馆",
-                message = "请选择您要进入的版本：",
-                confirmText = "官方网站",
-                confirmAction = {
-                    context.openInBrowser("https://liella.club/")
-                    dialogState = null
-                },
-                dismissText = "星象馆",
-                dismissAction = {
-                    currentScreen = "internal://music_magazine"
-                    dialogState = null
-                }
-            )
-            "timecapsule" -> DialogConfig(
-                title = "打开时光蛋",
-                message = "请选择操作：",
-                confirmText = "官方网站",
-                confirmAction = {
-                    context.openInBrowser("https://www.llhistoy.lionfree.net/lovelive.ws/index.html")
-                    dialogState = null
-                },
-                dismissText = "本地存档",
-                dismissAction = {
-                    currentScreen = "internal://time_capsule"
-                    dialogState = null
-                }
-            )
-            "wishbottle" -> DialogConfig(
-                title = "打开许愿瓶",
-                message = "请选择操作：",
-                confirmText = "官方网站",
-                confirmAction = {
-                    context.openInBrowser("https://aqours.tv/")
-                    dialogState = null
-                },
-                dismissText = "许愿池",
-                dismissAction = {
-                    currentScreen = "internal://wish_pool"
-                    dialogState = null
-                }
-            )
-            "activityroom" -> DialogConfig(
-                title = "进入活动室",
-                message = "请选择操作：",
-                confirmText = "官方网站",
-                confirmAction = {
-                    context.openInBrowser("https://nijigaku.club/")
-                    dialogState = null
-                },
-                dismissText = "活动记录",
-                dismissAction = {
-                    currentScreen = "internal://activity_log"
-                    dialogState = null
-                }
-            )
-            else -> null
-        }
-
-        dialogConfig?.let { config ->
-            AlertDialog(
-                onDismissRequest = { dialogState = null },
-                title = { Text(config.title) },
-                text = { Text(config.message) },
-                confirmButton = {
-                    Button(onClick = config.confirmAction) {
-                        Text(config.confirmText)
-                    }
-                },
-                dismissButton = {
-                    Button(onClick = config.dismissAction) {
-                        Text(config.dismissText)
-                    }
-                },
-                properties = DialogProperties(
-                    dismissOnClickOutside = true,
-                    dismissOnBackPress = true
-                )
-            )
-        }
-    }
-}
+// InspirationScreen已迁移到InspirationScreen.kt文件中
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimeCapsuleScreen(
-    onBack: () -> Unit
-) {
-    Column(Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("📼 缪斯时光蛋") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回"
-                    )
-                }
-            }
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "时光蛋本地内容待开发",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun WishPoolScreen(
-    onBack: () -> Unit
-) {
-    Column(Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("🏺 许愿池") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回"
-                    )
-                }
-            }
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "许愿池功能筹备中",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ActivityLogScreen(
-    onBack: () -> Unit
-) {
-    Column(Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("📝 活动记录") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回"
-                    )
-                }
-            }
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "活动记录空页面",
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MusicMagazineScreen(
-    onBack: () -> Unit
-) {
-    Column(Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = { Text("🌟 星象馆") },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
-                }
-            }
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "星象馆开发中",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                )
-            )
-        }
-    }
-}
+// 相关子屏幕已迁移到InspirationScreen.kt文件中
 
 sealed class GroupItem {
     data class Header(val title: String) : GroupItem()
@@ -622,6 +289,10 @@ fun EncyclopediaScreen(
     var selectedCharacter by remember { mutableStateOf<CharacterCard?>(null) }
     var selectedVoiceActor by remember { mutableStateOf<VoiceActorCard?>(null) }
 
+    // 添加新的拼音设置状态
+    val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
+    val showPinyin by settingsManager.showPinyinFlow.collectAsState(initial = false)
+
     // 初始化数据库仅执行一次
     LaunchedEffect(Unit) {
         repository.initializeFromAssets(context)
@@ -643,7 +314,6 @@ fun EncyclopediaScreen(
     // 收集状态流
     val groupedCharacters by viewModel.getCharactersByGroup().collectAsState(initial = emptyMap())
     val groupedVoiceActors by viewModel.getVoiceActorsByGroup().collectAsState(initial = emptyMap())
-    val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
 
     // 维护UI状态
     var currentDimension by rememberSaveable { mutableStateOf("角色") }
@@ -728,6 +398,7 @@ fun EncyclopediaScreen(
                         is GroupItem.Header -> GroupHeader(item.title)
                         is GroupItem.Character -> CharacterCardUI(
                             character = item.data,
+                            showPinyin = showPinyin,
                             onClick = { character ->
                                 selectedCharacter = character
                             }
@@ -735,10 +406,12 @@ fun EncyclopediaScreen(
                         is GroupItem.VoiceActor -> VoiceActorCardUI(
                             voiceActor = item.data,
                             showCoefficient = showCoefficient,
+                            showPinyin = showPinyin,
                             onClick = { voiceActor ->
                                 selectedVoiceActor = voiceActor
                             }
                         )
+                        else -> {}
                     }
                 }
             }
@@ -893,6 +566,7 @@ fun VoiceActorOptionsDialog(
 fun VoiceActorCardUI(
     voiceActor: VoiceActorCard,
     showCoefficient: Boolean,
+    showPinyin: Boolean = false, // 新增参数，默认值为false
     onClick: (VoiceActorCard) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -900,7 +574,7 @@ fun VoiceActorCardUI(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(290.dp)
+            .height(if (showCoefficient) 350.dp else 290.dp)
             .combinedClickable(
                 onClick = {
                     // 普通点击显示选项对话框
@@ -924,7 +598,8 @@ fun VoiceActorCardUI(
             // 标题区域
             NameSection(
                 name = voiceActor.name,
-                japaneseName = voiceActor.japaneseName
+                japaneseName = voiceActor.japaneseName,
+                showPinyin = showPinyin // 使用新增的参数
             )
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
@@ -950,19 +625,20 @@ fun VoiceActorCardUI(
 }
 
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CharacterCardUI(
     character: CharacterCard,
-    onClick: (CharacterCard) -> Unit = {}
+    onClick: (CharacterCard) -> Unit = {},
+    showPinyin: Boolean = false // 新增参数，默认值为false
 ) {
     val context = LocalContext.current
-
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(290.dp)
+            .height(if (showPinyin) 303.dp else 290.dp)
             .combinedClickable(
                 onClick = {
                     // 普通点击显示选项对话框
@@ -988,7 +664,8 @@ fun CharacterCardUI(
             // 名称区域
             NameSection(
                 name = character.name,
-                japaneseName = character.japaneseName
+                japaneseName = character.japaneseName,
+                showPinyin = showPinyin // 使用新增的参数
             )
 
             // 分割线
@@ -1020,8 +697,83 @@ fun CharacterCardUI(
 }
 
 @Composable
-private fun NameSection(name: String, japaneseName: String) {
+fun ChineseWithPinyin(
+    chinese: String,
+    modifier: Modifier = Modifier,
+    textStyle: TextStyle = LocalTextStyle.current,
+    pinyinTextStyle: TextStyle = textStyle.copy(
+        fontSize = textStyle.fontSize * 0.6f,
+        fontWeight = FontWeight.Normal
+    )
+) {
+    // 将中文字符和拼音对应起来
+    val characterWithPinyinList = remember(chinese) {
+        chinese.map { char ->
+            if (char.toString().matches("[\u4E00-\u9FA5]".toRegex())) {
+                try {
+                    val pinyinFormat = HanyuPinyinOutputFormat().apply {
+                        caseType = HanyuPinyinCaseType.LOWERCASE
+                        toneType = HanyuPinyinToneType.WITH_TONE_MARK
+                    }
+                    val pinyinArray = PinyinHelper.toHanyuPinyinStringArray(char, pinyinFormat)
+                    if (pinyinArray != null && pinyinArray.isNotEmpty()) {
+                        char to pinyinArray[0]
+                    } else {
+                        char to ""
+                    }
+                } catch (e: Exception) {
+                    char to ""
+                }
+            } else {
+                char to ""
+            }
+        }
+    }
+
+    Row(
+        verticalAlignment = Alignment.Bottom,
+        modifier = modifier
+    ) {
+        characterWithPinyinList.forEach { (char, pinyin) ->
+            if (pinyin.isEmpty()) {
+                // 非中文字符直接显示
+                Text(
+                    text = char.toString(),
+                    style = textStyle
+                )
+            } else {
+                // 中文字符带拼音显示
+                Box(
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // 拼音
+                        Text(
+                            text = pinyin,
+                            style = pinyinTextStyle,
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                        // 汉字
+                        Text(
+                            text = char.toString(),
+                            style = textStyle
+                        )
+                    }
+                }
+                // 添加一点空间
+                Spacer(modifier = Modifier.width(2.dp))
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun NameSection(name: String, japaneseName: String, showPinyin: Boolean = false) {
     Column {
+        // 中文名称
         Text(
             text = name,
             style = MaterialTheme.typography.titleLarge.copy(
@@ -1029,15 +781,35 @@ private fun NameSection(name: String, japaneseName: String) {
                 fontWeight = FontWeight.Bold
             )
         )
+
+        // 如果开启拼音显示，且能从映射表找到对应拼音，则显示拼音
+        if (showPinyin) {
+            PinyinUtils.chinesePinyinMap[name]?.let { pinyin ->
+                Text(
+                    text = pinyin,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        fontSize = 15.sp,  // 拼音字体
+                        fontWeight = FontWeight.Normal
+                    ),
+                    lineHeight = 16.sp
+                )
+            }
+        }
+
+        // 日文名显示（保持现有的罗马音转换）
         Text(
-            text = japaneseName,
+            text = if (showPinyin) PinyinUtils.convertJapaneseToRomaji(japaneseName) else japaneseName,
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 fontSize = 14.sp
-            )
+            ),
+            lineHeight = if (showPinyin) 24.sp else 18.sp
         )
     }
 }
+
+
 
 
 @Composable
@@ -1194,6 +966,48 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                             contentDescription = "箭头",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+                val showPinyin by settingsManager.showPinyinFlow.collectAsState(initial = false)
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            coroutineScope.launch {
+                                settingsManager.setShowPinyin(!showPinyin)
+                            }
+                        },
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 2.dp,
+                        pressedElevation = 4.dp
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(
+                            text = "百科卡片显示拼音及罗马音",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                        Switch(
+                            checked = showPinyin,
+                            onCheckedChange = {
+                                coroutineScope.launch {
+                                    settingsManager.setShowPinyin(it)
+                                }
+                            }
                         )
                     }
                 }

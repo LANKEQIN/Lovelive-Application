@@ -21,20 +21,13 @@ data class CharacterBasicInfo(
 
 @Serializable
 data class CharacterAdvancedInfo(
-    val relationships: List<Relationship>,
-    val signatureAttacks: List<SignatureAttack>
+    val relationships: List<Relationship>
 )
 
 @Serializable
 data class Relationship(
     val target: String,
     val type: String,
-    val description: String
-)
-
-@Serializable
-data class SignatureAttack(
-    val name: String,
     val description: String
 )
 

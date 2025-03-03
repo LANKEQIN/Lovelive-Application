@@ -1,0 +1,23 @@
+{
+  "characterName": "南小鸟",
+  "basicInfo": {
+    "cvName": "内田彩",
+    "group": "μ's",
+    "attribute": "温柔",
+    "themeColor": "#FFD700"
+  },
+  "advancedInfo": {
+    "relationships": [
+      {
+        "target": "高坂穗乃果",
+        "type": "青梅竹马",
+        "description": "从小一起长大的挚友"
+      },
+      {
+        "target": "园田海未",
+        "type": "队友",
+        "description": "共同创立校园偶像的伙伴"
+      }
+    ]
+  }
+}

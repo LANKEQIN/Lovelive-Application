@@ -59,6 +59,13 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/CONTRIBUTORS.md"
+            excludes += "/META-INF/LICENSE.md"
+        }
+    }
 }
 
 dependencies {
@@ -91,6 +98,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.kuromoji.ipadic)
+    implementation(libs.pinyin4j)
     ksp (libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)

@@ -35,7 +35,8 @@ fun VoiceActorDetailScreen(
         // 根据声优名称确定要加载的JSON文件
         val fileName = when (voiceActorName) {
             "新田惠海" -> "emi_detail.json"
-            // 未来可以添加更多声优
+            "内田彩" -> "uchida_detail.json"
+            // 添加更多声优
             else -> null
         }
 

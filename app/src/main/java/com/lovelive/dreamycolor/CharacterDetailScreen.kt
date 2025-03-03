@@ -36,7 +36,8 @@ fun CharacterDetailScreen(
         // 根据角色名称确定要加载的JSON文件
         val fileName = when (characterName) {
             "高坂穗乃果" -> "honoka_detail.json"
-            // 未来可以添加更多角色
+            "南小鸟" -> "kotori_detail.json"
+            // 添加更多角色
             else -> null
         }
 
@@ -89,47 +90,6 @@ fun CharacterDetailScreen(
                             description = relationship.description,
                             color = themeColor
                         )
-                    }
-                }
-
-                // 招牌技能区域
-                if (detail.advancedInfo.signatureAttacks.isNotEmpty()) {
-                    SectionTitle(title = "招牌技能", color = themeColor)
-                    detail.advancedInfo.signatureAttacks.forEach { attack ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = themeColor.copy(alpha = 0.1f)
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = themeColor,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Column(modifier = Modifier.padding(start = 16.dp)) {
-                                    Text(
-                                        text = attack.name,
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            color = themeColor,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                    Text(
-                                        text = attack.description,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        modifier = Modifier.padding(top = 4.dp)
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
 

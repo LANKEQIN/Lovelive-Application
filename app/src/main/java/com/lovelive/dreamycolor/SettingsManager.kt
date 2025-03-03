@@ -15,12 +15,19 @@ class SettingsManager(private val context: Context) {
     companion object {
         private val THEME_MODE = intPreferencesKey("theme_mode")
         private val SHOW_COEFFICIENT = booleanPreferencesKey("show_coefficient")
-        private val TEXT_SIZE = intPreferencesKey("text_size") // 新增
+        private val TEXT_SIZE = intPreferencesKey("text_size")
+        // 新增拼音显示设置键
+        private val SHOW_PINYIN = booleanPreferencesKey("show_pinyin")
     }
 
     // 新增：获取系数显示状态
     val showCoefficientFlow = context.dataStore.data.map { preferences ->
         preferences[SHOW_COEFFICIENT] ?: false
+    }
+
+    // 添加拼音显示状态流
+    val showPinyinFlow = context.dataStore.data.map { preferences ->
+        preferences[SHOW_PINYIN] ?: false
     }
 
     // 模式定义
@@ -40,6 +47,13 @@ class SettingsManager(private val context: Context) {
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { settings ->
             settings[THEME_MODE] = mode.value
+        }
+    }
+
+    // 添加设置拼音显示状态的方法
+    suspend fun setShowPinyin(show: Boolean) {
+        context.dataStore.edit { settings ->
+            settings[SHOW_PINYIN] = show
         }
     }
     suspend fun setShowCoefficient(show: Boolean) {
@@ -75,4 +89,5 @@ class SettingsManager(private val context: Context) {
             settings[TEXT_SIZE] = size.value
         }
     }
+
 }
