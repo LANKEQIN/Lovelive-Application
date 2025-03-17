@@ -21,6 +21,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.window.DialogProperties
+import android.os.Handler
+import android.os.Looper
 
 
 /**
@@ -81,6 +83,21 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                 currentSize = textSize,
                 onClick = { showTextSizeDialog = true }
             )
+
+            Button(
+                onClick = {
+                    // 先启动Flutter界面
+                    (context as? MainActivity)?.apply {
+                        startFlutterActivity()
+                        // 延迟发送消息，确保Flutter界面已经准备好
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            sendMessageToFlutter("Hello from Android!")
+                        }, 1000)
+                    }
+                }
+            ) {
+                Text("打开Flutter界面")
+            }
 
             // 主题设置长条
             Card(

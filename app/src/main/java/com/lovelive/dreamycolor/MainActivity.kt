@@ -63,7 +63,17 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.SizeTransform
 
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterEngineCache
+import io.flutter.embedding.engine.dart.DartExecutor
+import io.flutter.plugins.GeneratedPluginRegistrant
 
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler
+import io.flutter.plugin.common.MethodChannel.Result
+
+import android.util.Log
 
 /**
  * 对话框配置数据类，用于统一管理对话框的显示内容和交互行为
@@ -83,14 +93,48 @@ data class DialogConfig(
     val dismissAction: () -> Unit
 )
 
+
+
 /**
  * 应用程序的主Activity，继承自ComponentActivity
  * 负责初始化主题设置、资源管理和UI界面的构建
  */
 class MainActivity : ComponentActivity() {
+    private val CHANNEL = "com.example.dreamy_color/channel"
+    private lateinit var channel: MethodChannel
+
     private val settingsManager by lazy { SettingsManager(this) }
     // 添加ResourceManager实例
     private val resourceManager by lazy { ResourceManager.getInstance(this) }
+
+    private val FLUTTER_ENGINE_ID = "dreamycolor_flutter_engine"
+    private lateinit var flutterEngine: FlutterEngine
+
+    // 处理来自Flutter的消息
+    private fun handleFlutterMessage(message: String?, result: MethodChannel.Result) {
+        message?.let {
+            Log.d("Flutter Message", "Received message from Flutter: $it")
+            result.success("Android received: $it")
+        } ?: result.error("INVALID_MESSAGE", "Message was null", null)
+    }
+
+
+    // 向Flutter发送消息的方法
+    fun sendMessageToFlutter(message: String) {
+        runOnUiThread {
+            channel.invokeMethod("messageFromNative", message, object : MethodChannel.Result {
+                override fun success(result: Any?) {
+                    Log.d("Native Message", "Flutter response: $result")
+                }
+                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                    Log.e("Native Message", "Error: $errorCode, $errorMessage")
+                }
+                override fun notImplemented() {
+                    Log.w("Native Message", "Method not implemented")
+                }
+            })
+        }
+    }
 
     /**
  * Activity创建时的回调方法
@@ -99,7 +143,28 @@ class MainActivity : ComponentActivity() {
 override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
+
+        // 初始化并缓存Flutter引擎
+        initFlutterEngine()
+
+        // 初始化MethodChannel
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+
+        // 设置方法调用处理器
+        channel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "sendMessage" -> {
+                    // 处理来自Flutter的消息
+                    val message = call.argument<String>("message")
+                    handleFlutterMessage(message, result)
+                }
+
+                else -> {
+                    result.notImplemented()
+                }
+            }
+        }
+
         // 预加载常用资源
         preloadResources()
 
@@ -155,7 +220,34 @@ override fun onCreate(savedInstanceState: Bundle?) {
             }
         }
     }
-    
+
+
+    private fun initFlutterEngine() {
+
+        // 创建FlutterEngine实例
+        flutterEngine = FlutterEngine(this)
+
+        // 启动引擎执行Dart代码
+        flutterEngine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
+
+        // 注册插件
+        GeneratedPluginRegistrant.registerWith(flutterEngine)
+
+        // 缓存引擎以便重用
+        FlutterEngineCache.getInstance().put(FLUTTER_ENGINE_ID, flutterEngine)
+    }
+
+    // 添加启动Flutter界面的方法
+    fun startFlutterActivity() {
+        startActivity(
+            FlutterActivity
+                .withCachedEngine(FLUTTER_ENGINE_ID)
+                .build(this)
+        )
+    }
+
+
+
     // 添加预加载资源的方法
     private fun preloadResources() {
         // 预加载常用字符串资源
