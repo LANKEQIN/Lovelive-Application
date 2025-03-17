@@ -1,6 +1,5 @@
 package com.lovelive.dreamycolor
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -8,7 +7,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,13 +19,31 @@ import androidx.compose.ui.unit.dp
 import com.lovelive.dreamycolor.model.CharacterDetail
 import com.lovelive.dreamycolor.model.toColor
 import com.lovelive.dreamycolor.utils.DetailJsonUtils
+import androidx.compose.ui.text.font.FontStyle
+import androidx.activity.compose.BackHandler
+
+
+
+// 角色头像映射
+private val characterImageResources = mapOf(
+    "高坂穗乃果" to R.drawable.ic_honoka_head,
+    // 其他角色映射...
+)
+
+// 获取角色头像资源 ID
+private fun getCharacterImageResource(characterName: String): Int {
+    return characterImageResources[characterName] ?: 0
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterDetailScreen(
     characterName: String,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
 ) {
+    BackHandler(onBack = onBackPressed)
+
     val context = LocalContext.current
     var characterDetail by remember { mutableStateOf<CharacterDetail?>(null) }
 
@@ -69,6 +85,18 @@ fun CharacterDetailScreen(
             "米雅·泰勒" -> "3_mia_taylor_detail.json"
             "优木雪菜" -> "3_yuuki_setsuna_detail.json"
 
+            "涩谷香音"  -> "4_shibuya_kanon_detail.json"
+            "唐可可"   -> "4_tang_keke_detail.json"
+            "岚千砂都" -> "4_arashi_chisato_detail.json"
+            "平安名堇" -> "4_heanna_sumire_detail.json"
+            "叶月恋" -> "4_hazuki_ren_detail.json"
+            "樱小路希奈子" -> "4_sakurakoji_kinako_detail.json"
+            "米女芽衣" -> "4_yoneme_mei_detail.json"
+            "若菜四季" -> "4_wakana_shiki_detail.json"
+            "鬼塚夏美" -> "4_onitsuka_natsumi_detail.json"
+            "鬼塚冬毬" -> "4_onitsuka_tomari_detail.json"
+            "薇恩·玛格丽特" -> "4_wien_margarete_detail.json"
+
 
             else -> null
         }
@@ -102,20 +130,40 @@ fun CharacterDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 0.dp)
             ) {
                 // 头部区域
                 CharacterHeader(detail, themeColor)
 
                 // 基本信息区域
                 SectionTitle(title = "基本信息", color = themeColor)
-                InfoItem(label = "所属团体", value = detail.basicInfo.group, color = themeColor)
-                InfoItem(label = "属性", value = detail.basicInfo.attribute, color = themeColor)
-                InfoItem(label = "声优", value = detail.basicInfo.cvName, color = themeColor)
+                Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)) { // 外层 Column 添加间距
+                    InfoItem(label = "年龄", value = "${detail.basicInfo.age}岁", color = themeColor)
+                    InfoItem(label = "学校", value = detail.basicInfo.school, color = themeColor)
+                    InfoItem(label = "身高", value = "${detail.basicInfo.height}cm", color = themeColor)
+                    InfoItem(label = "声优", value = detail.basicInfo.cvName, color = themeColor)
+                    InfoItem(label = "所属团体", value = detail.basicInfo.group, color = themeColor)
+                    InfoItem(label = "属性", value = detail.basicInfo.attribute, color = themeColor)
+                }
+
+                // 角色简介
+                SectionTitle(title = "角色简介", color = themeColor)
+                Text(
+                    text = "    " + detail.basicInfo.bio,  // 直接在文本前面添加两个空格实现首行缩进
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.3f // 行间距
+                    ),
+                    modifier = Modifier
+                        .padding(vertical = 16.dp, horizontal = 20.dp)
+                        .fillMaxWidth(),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Start
+                )
+
 
                 // 关系区域
                 if (detail.advancedInfo.relationships.isNotEmpty()) {
-                    SectionTitle(title = "人际关系", color = themeColor)
-                    detail.advancedInfo.relationships.forEach { relationship ->
+                    SectionTitle(title = "人际关系（部分）", color = themeColor)
+                    detail.advancedInfo.relationships.take(3).forEach { relationship ->
                         RelationshipItem(
                             target = relationship.target,
                             type = relationship.type,
@@ -124,6 +172,21 @@ fun CharacterDetailScreen(
                         )
                     }
                 }
+
+                // 脚注/参考资料
+                if (detail.footnotes.isNotEmpty()) {
+                    SectionTitle(title = "参考资料", color = themeColor)
+                    detail.footnotes.forEachIndexed { index, footnote ->
+                        Text(
+                            text = "${index + 1}. $footnote",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 20.dp)
+                        )
+                    }
+                }
+
+
 
                 // 底部空间
                 Spacer(modifier = Modifier.height(24.dp))
@@ -141,7 +204,6 @@ fun CharacterDetailScreen(
         }
     }
 }
-
 @Composable
 private fun CharacterHeader(
     detail: CharacterDetail,
@@ -154,30 +216,66 @@ private fun CharacterHeader(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 角色头像（占位）
-        Box(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(CircleShape)
-                .background(themeColor.copy(alpha = 0.3f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = detail.characterName.take(1),
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    color = themeColor,
-                    fontWeight = FontWeight.Bold
-                )
+        // 角色头像
+        val imageRes = getCharacterImageResource(detail.characterName)
+        if (imageRes != 0) {
+            // 有对应图片资源时显示图片
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(id = imageRes),
+                contentDescription = detail.characterName,
+                modifier = Modifier
+                    .size(130.dp)
+                    .clip(CircleShape),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
+        } else {
+            // 没有对应图片资源时显示占位符
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(themeColor.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = detail.characterName.take(1),
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        color = themeColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
         }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 角色名称
-        DetailHeader(
-            title = detail.characterName,
-            themeColor = themeColor
+        // 角色中文名称
+        Text(
+            text = detail.characterName,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         )
+
+        // 角色日文名称
+        Text(
+            text = detail.japaneseName,
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+
+        // 罗马音
+        Text(
+            text = detail.romanizedName,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+
 
         // 角色属性标签
         Row(
@@ -187,18 +285,33 @@ private fun CharacterHeader(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AttributeChip(
-                text = detail.basicInfo.group,
-                color = themeColor
-            )
+            AttributeChip(text = detail.basicInfo.group, color = themeColor)
             Spacer(modifier = Modifier.width(8.dp))
-            AttributeChip(
-                text = detail.basicInfo.attribute,
-                color = themeColor
-            )
+            AttributeChip(text = detail.basicInfo.attribute, color = themeColor)
         }
     }
 }
+
+
+@Composable
+fun AttributeChip(text: String, color: Color) {
+    Surface(
+        color = color.copy(alpha = 0.2f),
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.padding(4.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = color,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)
+        )
+    }
+}
+
+
+
 
 
 

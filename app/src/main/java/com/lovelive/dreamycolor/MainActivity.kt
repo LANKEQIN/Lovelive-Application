@@ -1,18 +1,18 @@
+/**
+ * 主Activity类，负责应用程序的整体UI结构和导航逻辑
+ * 包含主题切换、启动屏、底部导航等核心功能
+ */
 @file:OptIn(ExperimentalFoundationApi::class)
-
 package com.lovelive.dreamycolor
 
+import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -25,27 +25,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -58,19 +51,29 @@ import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
 import com.lovelive.dreamycolor.utils.copyToClipboard
 import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-
-import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType
-import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat
-import net.sourceforge.pinyin4j.format.HanyuPinyinToneType
-import net.sourceforge.pinyin4j.PinyinHelper
-import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination
 import com.lovelive.dreamycolor.utils.PinyinUtils
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.SizeTransform
 
 
-// 用于对话框配置的数据类
+
+/**
+ * 对话框配置数据类，用于统一管理对话框的显示内容和交互行为
+ * @property title 对话框标题
+ * @property message 对话框消息内容
+ * @property confirmText 确认按钮文本
+ * @property confirmAction 确认按钮点击回调
+ * @property dismissText 取消按钮文本
+ * @property dismissAction 取消按钮点击回调
+ */
 data class DialogConfig(
     val title: String,
     val message: String,
@@ -80,12 +83,25 @@ data class DialogConfig(
     val dismissAction: () -> Unit
 )
 
+/**
+ * 应用程序的主Activity，继承自ComponentActivity
+ * 负责初始化主题设置、资源管理和UI界面的构建
+ */
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
+    // 添加ResourceManager实例
+    private val resourceManager by lazy { ResourceManager.getInstance(this) }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    /**
+ * Activity创建时的回调方法
+ * 初始化主题设置、启用边缘到边缘显示，并设置主界面内容
+ */
+override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // 预加载常用资源
+        preloadResources()
 
         setContent {
             val themeMode by settingsManager.themeModeFlow.collectAsState(
@@ -99,6 +115,9 @@ class MainActivity : ComponentActivity() {
                 SettingsManager.ThemeMode.DARK -> true
                 else -> isSystemInDarkTheme()
             }
+            
+            // 收集主题颜色设置
+            val colorTheme by settingsManager.colorThemeFlow.collectAsState(initial = SettingsManager.ColorTheme.MATERIAL_YOU)
 
             // 动态设置状态栏文字颜色
             LaunchedEffect(isDarkTheme) {
@@ -109,29 +128,60 @@ class MainActivity : ComponentActivity() {
 
             DreamyColorTheme(
                 themeMode = themeMode,
-                textSize = textSize
+                textSize = textSize,
+                colorTheme = colorTheme
             ) {
                 // 使用rememberSaveable保持屏幕旋转后的状态
                 var showSplash by rememberSaveable { mutableStateOf(true) }
 
-                Crossfade(
-                    targetState = showSplash,
-                    animationSpec = tween(800)
-                ) { isSplash ->
-                    if (isSplash) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // 主内容始终在底部
+                    MainContent(settingsManager = settingsManager)
+
+                    // 开屏动画覆盖在上面，逐渐消失
+                    AnimatedVisibility(
+                        visible = showSplash,
+                        enter = fadeIn(animationSpec = tween(300)),
+                        exit = fadeOut(animationSpec = tween(800))
+                    ) {
                         SplashScreen(
                             onTimeout = { showSplash = false },
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.background)
                         )
-                    } else {
-                        MainContent(settingsManager = settingsManager)
                     }
                 }
             }
         }
     }
+    
+    // 添加预加载资源的方法
+    private fun preloadResources() {
+        // 预加载常用字符串资源
+        val commonStringIds = listOf(
+            R.string.app_name,
+            R.string.splash_text
+            // 可以根据需要添加更多常用字符串资源ID
+        )
+        resourceManager.preloadStrings(commonStringIds)
+        
+        // 预加载常用图片资源
+        val commonDrawableIds = listOf(
+            R.drawable.ic_launcher_background
+            // 可以根据需要添加更多常用图片资源ID
+        )
+        resourceManager.preloadDrawables(commonDrawableIds)
+    }
 }
 
+/**
+ * 启动屏界面组件
+ * 显示应用启动时的过渡动画，支持自定义超时回调
+ *
+ * @param onTimeout 启动屏超时后的回调函数
+ * @param modifier 可选的Modifier参数，用于自定义组件样式
+ */
 @Composable
 fun SplashScreen(
     onTimeout: () -> Unit,
@@ -153,7 +203,7 @@ fun SplashScreen(
         }
 
         LaunchedEffect(Unit) {
-            delay(1500L)
+            delay(1100L)
             onTimeout()
         }
     }
@@ -161,6 +211,12 @@ fun SplashScreen(
 
 
 // 主界面内容
+/**
+ * 主界面内容组件
+ * 包含底部导航栏和多个子页面的容器，管理页面间的导航和状态
+ *
+ * @param settingsManager 设置管理器实例，用于管理应用配置
+ */
 @Composable
 fun MainContent(settingsManager: SettingsManager) {
     val items = remember {
@@ -168,19 +224,33 @@ fun MainContent(settingsManager: SettingsManager) {
             Screen.Exclusive,
             Screen.Inspiration,
             Screen.Encyclopedia,
-            Screen.Profile
+            Screen.Profile // 添加 Profile 屏幕
         )
     }
-
     // 添加导航状态
     var currentScreen by rememberSaveable { mutableStateOf<String?>(null) }
     var characterName by rememberSaveable { mutableStateOf("") }
     var voiceActorName by rememberSaveable { mutableStateOf("") }
-
+    // 添加这个变量来记录百科卡片列表的滚动位置
+    var encyclopediaScrollPosition by rememberSaveable { mutableIntStateOf(0) }
+    var encyclopediaDimension by rememberSaveable { mutableStateOf("角色") }
+    // 添加Tab选择状态作为主导航机制
+    var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     // 使用rememberSaveable保持页面状态在配置更改时不丢失
-    val pagerState = rememberPagerState(pageCount = { items.size })
-    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { items.size }, initialPage = selectedTabIndex)
 
+
+    // 确保pagerState和selectedTabIndex保持同步
+    LaunchedEffect(selectedTabIndex) {
+        if (pagerState.currentPage != selectedTabIndex) {
+            pagerState.animateScrollToPage(selectedTabIndex)
+        }
+    }
+    LaunchedEffect(pagerState.currentPage) {
+        if (pagerState.currentPage != selectedTabIndex) {
+            selectedTabIndex = pagerState.currentPage
+        }
+    }
     Scaffold(
         bottomBar = {
             // 只在主界面显示底部导航栏
@@ -203,11 +273,9 @@ fun MainContent(settingsManager: SettingsManager) {
                                     )
                                 )
                             },
-                            selected = pagerState.currentPage == index,
+                            selected = selectedTabIndex == index,
                             onClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(index)
-                                }
+                                selectedTabIndex = index
                             }
                         )
                     }
@@ -215,40 +283,68 @@ fun MainContent(settingsManager: SettingsManager) {
             }
         }
     ) { innerPadding ->
-        // 使用Crossfade进行页面切换动画
-        Crossfade(
+        // 页面切换动画
+        AnimatedContent(
             targetState = currentScreen,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            transitionSpec = {
+                // 替换原有的淡入淡出动画为左右平移动画
+                val slideDirection = if (targetState == null)
+                    slideInHorizontally { -it } togetherWith
+                            slideOutHorizontally { it }
+                else
+                    slideInHorizontally { it } togetherWith
+                            slideOutHorizontally { -it }
+
+                slideDirection.using(SizeTransform(clip = false))
+            }
         ) { screen ->
             when (screen) {
                 "character_detail" -> CharacterDetailScreen(
                     characterName = characterName,
-                    onBackPressed = { currentScreen = null }
+                    onBackPressed = {
+                        currentScreen = null
+                    }
                 )
                 "voice_actor_detail" -> VoiceActorDetailScreen(
                     voiceActorName = voiceActorName,
-                    onBackPressed = { currentScreen = null }
+                    onBackPressed = {
+                        currentScreen = null
+                    }
                 )
                 null -> {
-                    // 显示主界面
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize()
-                    ) { page ->
-                        when (page) {
-                            0 -> ExclusiveScreen()
-                            1 -> InspirationScreen()
-                            2 -> EncyclopediaScreen(
-                                onCharacterClick = { name ->
-                                    characterName = name
-                                    currentScreen = "character_detail"
-                                },
-                                onVoiceActorClick = { name ->
-                                    voiceActorName = name
-                                    currentScreen = "voice_actor_detail"
-                                }
-                            )
-                            3 -> ProfileScreen(settingsManager)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        // 使用HorizontalPager替代手势检测，提供更流畅的滑动体验
+                        androidx.compose.foundation.pager.HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize(),
+                            userScrollEnabled = true, // 允许用户滑动
+                            pageSpacing = 0.dp, // 页面间距
+                            // 使用最新版本的HorizontalPager API
+                        ) { page ->
+                            when (page) {
+                                0 -> ExclusiveScreen()
+                                1 -> InspirationScreen()
+                                2 -> EncyclopediaScreen(
+                                    onCharacterClick = { name ->
+                                        characterName = name
+                                        currentScreen = "character_detail"
+                                    },
+                                    onVoiceActorClick = { name ->
+                                        voiceActorName = name
+                                        currentScreen = "voice_actor_detail"
+                                    },
+                                    initialScrollPosition = encyclopediaScrollPosition,
+                                    onScrollPositionChange = { position ->
+                                        encyclopediaScrollPosition = position
+                                    },
+                                    initialDimension = encyclopediaDimension,
+                                    onDimensionChange = { dimension ->
+                                        encyclopediaDimension = dimension
+                                    }
+                                )
+                                3 -> ProfileScreen(settingsManager = settingsManager) // 添加 ProfileScreen
+                            }
                         }
                     }
                 }
@@ -256,7 +352,6 @@ fun MainContent(settingsManager: SettingsManager) {
         }
     }
 }
-
 
 
 // Website数据类和相关函数已迁移到InspirationScreen.kt
@@ -268,6 +363,10 @@ fun MainContent(settingsManager: SettingsManager) {
 
 // 相关子屏幕已迁移到InspirationScreen.kt文件中
 
+/**
+ * 分组项密封类，用于百科页面的列表项类型定义
+ * 包含Header（组标题）、Character（角色信息）和VoiceActor（声优信息）三种类型
+ */
 sealed class GroupItem {
     data class Header(val title: String) : GroupItem()
     data class Character(val data: CharacterCard) : GroupItem()
@@ -275,30 +374,54 @@ sealed class GroupItem {
 }
 
 
+/**
+ * 百科页面组件
+ * 展示角色和声优信息的可折叠列表，支持分组显示和状态保持
+ *
+ * @param onCharacterClick 角色点击回调
+ * @param onVoiceActorClick 声优点击回调
+ * @param initialScrollPosition 初始滚动位置
+ * @param onScrollPositionChange 滚动位置变化回调
+ * @param initialDimension 初始维度（角色/声优）
+ * @param onDimensionChange 维度变化回调
+ */
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 fun EncyclopediaScreen(
     onCharacterClick: (String) -> Unit = {},
-    onVoiceActorClick: (String) -> Unit = {}
+    onVoiceActorClick: (String) -> Unit = {},
+    initialScrollPosition: Int = 0,
+    onScrollPositionChange: (Int) -> Unit = {},
+    initialDimension: String = "角色",
+    onDimensionChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val database = remember { EncyclopediaDatabase.getDatabase(context) }
     val repository = remember { EncyclopediaRepository(database.encyclopediaDao()) }
     val settingsManager = remember { SettingsManager(context) }
-
-    // 添加对话框状态管理
+    val listState = rememberLazyGridState(initialFirstVisibleItemIndex = initialScrollPosition)
     var selectedCharacter by remember { mutableStateOf<CharacterCard?>(null) }
     var selectedVoiceActor by remember { mutableStateOf<VoiceActorCard?>(null) }
-
-    // 添加新的拼音设置状态
     val showCoefficient by settingsManager.showCoefficientFlow.collectAsState(initial = false)
     val showPinyin by settingsManager.showPinyinFlow.collectAsState(initial = false)
+    var currentDimension by rememberSaveable { mutableStateOf(initialDimension) }
+    var previousDimension by rememberSaveable { mutableStateOf(initialDimension) }
+    // 使用rememberSaveable而不是remember来保持展开状态，避免重组时丢失
+    var expandedGroups by rememberSaveable { mutableStateOf(mutableMapOf<String, Boolean>()) }
 
-    // 初始化数据库仅执行一次
-    LaunchedEffect(Unit) {
-        repository.initializeFromAssets(context)
+    LaunchedEffect(currentDimension) {
+        onDimensionChange(currentDimension)
     }
 
-    // 使用工厂方法创建ViewModel
+    val currentScrollPosition = remember(listState) {
+        derivedStateOf { listState.firstVisibleItemIndex }
+    }
+    LaunchedEffect(currentScrollPosition.value) {
+        if (currentScrollPosition.value != initialScrollPosition) {
+            onScrollPositionChange(currentScrollPosition.value)
+        }
+    }
+
     val viewModel: EncyclopediaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -311,45 +434,39 @@ fun EncyclopediaScreen(
         }
     )
 
-    // 收集状态流
     val groupedCharacters by viewModel.getCharactersByGroup().collectAsState(initial = emptyMap())
     val groupedVoiceActors by viewModel.getVoiceActorsByGroup().collectAsState(initial = emptyMap())
 
-    // 维护UI状态
-    var currentDimension by rememberSaveable { mutableStateOf("角色") }
-    val scrollState = rememberScrollState()
-    var isFabVisible by remember { mutableStateOf(true) }
-
-    // 新增：构建带分组的列表数据
-    val characterItems = remember(groupedCharacters) {
-        groupedCharacters.flatMap { (group, list) ->
-            listOf(GroupItem.Header(group)) + list.map { GroupItem.Character(it) }
-        }
-    }
-    val voiceActorItems = remember(groupedVoiceActors) {
-        groupedVoiceActors.flatMap { (group, list) ->
-            listOf(GroupItem.Header(group)) + list.map { GroupItem.VoiceActor(it) }
+    // 使用derivedStateOf优化列表项计算，减少重组
+    val characterItems = remember(groupedCharacters, expandedGroups) {
+        derivedStateOf {
+            groupedCharacters.flatMap { (group, list) ->
+                val isExpanded = expandedGroups[group] != false
+                listOf(GroupItem.Header(group)) +
+                        if (isExpanded) list.map { GroupItem.Character(it) } else emptyList()
+            }
         }
     }
 
-    // 监听滚动状态控制FAB可见性
-    LaunchedEffect(scrollState.isScrollInProgress) {
-        if (scrollState.isScrollInProgress) {
-            isFabVisible = false
-        } else {
-            delay(500) // 停止滚动后延迟显示
-            isFabVisible = true
+    val voiceActorItems = remember(groupedVoiceActors, expandedGroups) {
+        derivedStateOf {
+            groupedVoiceActors.flatMap { (group, list) ->
+                val isExpanded = expandedGroups[group] != false
+                listOf(GroupItem.Header(group)) +
+                        if (isExpanded) list.map { GroupItem.VoiceActor(it) } else emptyList()
+            }
         }
     }
+
+    // 移除滚动监听逻辑和isFabVisible状态变量
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // 切换按钮区域
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 16.dp), // 增加垂直间距
-                horizontalArrangement = Arrangement.Center, // 添加水平居中排列
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -377,97 +494,108 @@ fun EncyclopediaScreen(
                 }
             }
 
-            // 主内容区改用单 LazyGrid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                state = listState
             ) {
+                val items = if (currentDimension == "角色") characterItems.value else voiceActorItems.value
                 items(
-                    items = if (currentDimension == "角色") characterItems else voiceActorItems,
+                    items = items,
                     span = { item ->
                         when (item) {
-                            is GroupItem.Header -> GridItemSpan(2) // 标题跨2列
-                            else -> GridItemSpan(1) // 内容项占1列
+                            is GroupItem.Header -> GridItemSpan(2)
+                            else -> GridItemSpan(1)
+                        }
+                    },
+                    key = { item ->
+                        when (item) {
+                            is GroupItem.Header -> "header_${item.title}"
+                            is GroupItem.Character -> "character_${item.data.name}"
+                            is GroupItem.VoiceActor -> "voiceactor_${item.data.name}"
                         }
                     }
                 ) { item ->
                     when (item) {
-                        is GroupItem.Header -> GroupHeader(item.title)
-                        is GroupItem.Character -> CharacterCardUI(
-                            character = item.data,
-                            showPinyin = showPinyin,
-                            onClick = { character ->
-                                selectedCharacter = character
+                        is GroupItem.Header -> GroupHeader(
+                            title = item.title,
+                            expanded = expandedGroups[item.title] != false,
+                            onExpandedChange = {
+                                expandedGroups = expandedGroups.toMutableMap().apply {
+                                    this[item.title] = this[item.title] == false
+                                }
                             }
                         )
-                        is GroupItem.VoiceActor -> VoiceActorCardUI(
-                            voiceActor = item.data,
-                            showCoefficient = showCoefficient,
-                            showPinyin = showPinyin,
-                            onClick = { voiceActor ->
-                                selectedVoiceActor = voiceActor
-                            }
-                        )
-                        else -> {}
+                        is GroupItem.Character -> {
+                            // 不再需要AnimatedVisibility，因为我们在构建列表时已经过滤了
+                            CharacterCardUI(
+                                character = item.data,
+                                showPinyin = showPinyin,
+                                onClick = { character ->
+                                    previousDimension = currentDimension
+                                    selectedCharacter = character
+                                }
+                            )
+                        }
+                        is GroupItem.VoiceActor -> {
+                            // 不再需要AnimatedVisibility，因为我们在构建列表时已经过滤了
+                            VoiceActorCardUI(
+                                voiceActor = item.data,
+                                showCoefficient = showCoefficient,
+                                showPinyin = showPinyin,
+                                onClick = { voiceActor ->
+                                    previousDimension = currentDimension
+                                    selectedVoiceActor = voiceActor
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
 
-        // 悬浮刷新按钮
-        AnimatedVisibility(
-            visible = isFabVisible,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            FloatingActionButton(
-                onClick = { viewModel.refreshData(context) },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "刷新数据",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+        // 移除刷新按钮相关代码
     }
 
-    // 角色详情对话框
     selectedCharacter?.let { character ->
         CharacterOptionsDialog(
             character = character,
-            onDismiss = { selectedCharacter = null },
+            onDismiss = {
+                selectedCharacter = null
+                currentDimension = previousDimension
+            },
             onLocalPageClick = {
                 selectedCharacter = null
+                currentDimension = previousDimension
                 onCharacterClick(character.name)
             },
             onExternalWikiClick = {
                 selectedCharacter = null
+                currentDimension = previousDimension
                 val url = "https://mzh.moegirl.org.cn/${character.name}"
                 context.openInBrowser(url)
             }
         )
     }
 
-    // 声优详情对话框
     selectedVoiceActor?.let { voiceActor ->
         VoiceActorOptionsDialog(
             voiceActor = voiceActor,
-            onDismiss = { selectedVoiceActor = null },
+            onDismiss = {
+                selectedVoiceActor = null
+                currentDimension = previousDimension
+            },
             onLocalPageClick = {
                 selectedVoiceActor = null
+                currentDimension = previousDimension
                 onVoiceActorClick(voiceActor.name)
             },
             onExternalWikiClick = {
                 selectedVoiceActor = null
+                currentDimension = previousDimension
                 val url = "https://mzh.moegirl.org.cn/${voiceActor.name}"
                 context.openInBrowser(url)
             }
@@ -477,15 +605,41 @@ fun EncyclopediaScreen(
 
 // 新增：分组标题组件
 @Composable
-private fun GroupHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.headlineSmall,
-        color = MaterialTheme.colorScheme.primary,
+fun GroupHeader(
+    title: String,
+    expanded: Boolean = true,
+    onExpandedChange: () -> Unit = {},
+    verticalPadding: Dp = 12.dp
+) {
+    Row(
         modifier = Modifier
-            .padding(vertical = 8.dp)
             .fillMaxWidth()
-    )
+            .background(
+                MaterialTheme.colorScheme.secondaryContainer,
+                MaterialTheme.shapes.medium
+            )
+            .padding(horizontal = 12.dp, vertical = verticalPadding)
+            .clickable { onExpandedChange() },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AnimatedVisibility(
+            visible = true,
+            enter = fadeIn(animationSpec = tween(durationMillis = 200)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 200))
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+        Icon(
+            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = if (expanded) "折叠" else "展开",
+            tint = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    }
 }
 
 @Composable
@@ -561,30 +715,39 @@ fun VoiceActorOptionsDialog(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @Composable
 fun VoiceActorCardUI(
     voiceActor: VoiceActorCard,
     showCoefficient: Boolean,
-    showPinyin: Boolean = false, // 新增参数，默认值为false
+    showPinyin: Boolean = false,
     onClick: (VoiceActorCard) -> Unit = {}
 ) {
-    val context = LocalContext.current
+    // 使用remember缓存计算结果，避免重组时重复计算
+    val cardHeight = remember(showCoefficient, showPinyin) {
+        when {
+            showCoefficient && showPinyin -> 340.dp
+            showCoefficient -> 280.dp
+            showPinyin -> 270.dp
+            else -> 240.dp
+        }
+    }
+
+    // 预先计算信息项列表，避免重组时重复创建
+    val infoItems = remember(voiceActor, showCoefficient) {
+        listOfNotNull(
+            "生日" to voiceActor.birthday,
+            "事务所" to voiceActor.agency,
+            if (showCoefficient) "系数" to voiceActor.coefficient else null
+        )
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (showCoefficient) 350.dp else 290.dp)
-            .combinedClickable(
-                onClick = {
-                    // 普通点击显示选项对话框
-                    onClick(voiceActor)
-                },
-                onLongClick = {
-                    // 长按复制名称
-                    context.copyToClipboard("${voiceActor.name}\n${voiceActor.japaneseName}")
-                }
-            ),
+            .height(cardHeight)
+            // 使用clickable替代pointerInput以提高性能
+            .clickable { onClick(voiceActor) },
         elevation = CardDefaults.cardElevation(
             defaultElevation = 4.dp,
             pressedElevation = 8.dp
@@ -592,88 +755,68 @@ fun VoiceActorCardUI(
         shape = MaterialTheme.shapes.large
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(13.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // 标题区域
             NameSection(
                 name = voiceActor.name,
                 japaneseName = voiceActor.japaneseName,
-                showPinyin = showPinyin // 使用新增的参数
+                showPinyin = showPinyin
             )
-
             HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-
             // 信息区域
-            GridLayout(
-                listOfNotNull(
-                    "生日" to voiceActor.birthday,
-                    "事务所" to voiceActor.agency,
-                    if (showCoefficient) "系数" to voiceActor.coefficient else null
-                )
-            )
-
-            // 描述区域
-            Text(
-                text = voiceActor.description,
-                maxLines = 3, // 限制描述文本行数
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            GridLayout(infoItems)
         }
     }
 }
 
-
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CharacterCardUI(
     character: CharacterCard,
     onClick: (CharacterCard) -> Unit = {},
-    showPinyin: Boolean = false // 新增参数，默认值为false
+    showPinyin: Boolean = false
 ) {
     val context = LocalContext.current
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(if (showPinyin) 303.dp else 290.dp)
-            .combinedClickable(
-                onClick = {
-                    // 普通点击显示选项对话框
-                    onClick(character)
-                },
-                onLongClick = {
-                    // 长按复制名称
-                    context.copyToClipboard("${character.name}\n${character.japaneseName}")
+            .height(
+                when {
+                    showPinyin -> 270.dp
+                    else -> 240.dp
                 }
-            ),
+            )
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick(character) },
+                    onLongPress = {
+                        context.copyToClipboard("${character.name}\n${character.japaneseName}")
+                    }
+                )
+            },
         elevation = CardDefaults.cardElevation(4.dp),
         shape = MaterialTheme.shapes.large,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        // 使用与VoiceActorCardUI相同的默认颜色
+        colors = CardDefaults.cardColors()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(13.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // 名称区域
             NameSection(
                 name = character.name,
                 japaneseName = character.japaneseName,
-                showPinyin = showPinyin // 使用新增的参数
+                showPinyin = showPinyin
             )
-
             // 分割线
             HorizontalDivider(
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
             )
-
             // 信息网格
             GridLayout(
                 listOfNotNull(
@@ -681,63 +824,87 @@ fun CharacterCardUI(
                     "年级" to character.schoolYear,
                 )
             )
-
-            // 描述区域
-            Text(
-                text = character.description,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    lineHeight = 18.sp
-                ),
-                maxLines = 4, // 限制最大行数
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
 
-
 @Composable
 private fun NameSection(name: String, japaneseName: String, showPinyin: Boolean = false) {
-    Column {
+    // 使用remember缓存计算结果
+    val height = remember(showPinyin) {
+        if (showPinyin) 70.dp else 60.dp
+    }
+
+    // 预先计算拼音，避免在渲染时计算
+    val pinyin = remember(name, showPinyin) {
+        if (showPinyin) PinyinUtils.chinesePinyinMap[name] else null
+    }
+
+    // 预先计算罗马音，避免在渲染时计算
+    val displayJapaneseName = remember(japaneseName, showPinyin) {
+        if (showPinyin) PinyinUtils.convertJapaneseToRomaji(japaneseName) else japaneseName
+    }
+
+    // 根据拼音长度动态计算字体大小
+    val pinyinFontSize = remember(pinyin) {
+        when (pinyin?.length) {
+            null, in 0..14 -> 13.sp
+            in 19..23 -> 9.sp
+            18 -> 10.sp
+            16, 17 -> 11.sp
+            else -> 13.sp
+        }
+    }
+
+
+    // 根据日文名长度动态计算字体大小
+    val japaneseNameFontSize = remember(japaneseName) {
+        when (displayJapaneseName.length) {
+            in 0..14 -> 13.sp
+            in 15..17 -> 11.sp
+            18 -> 10.sp
+            else -> 13.sp
+        }
+    }
+
+
+    Column(modifier = Modifier.height(height)) {
         // 中文名称
         Text(
             text = name,
             style = MaterialTheme.typography.titleLarge.copy(
                 color = MaterialTheme.colorScheme.primary,
+                fontSize = 19 .sp,
                 fontWeight = FontWeight.Bold
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         // 如果开启拼音显示，且能从映射表找到对应拼音，则显示拼音
-        if (showPinyin) {
-            PinyinUtils.chinesePinyinMap[name]?.let { pinyin ->
-                Text(
-                    text = pinyin,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                        fontSize = 15.sp,  // 拼音字体
-                        fontWeight = FontWeight.Normal
-                    ),
-                    lineHeight = 16.sp
-                )
-            }
+        if (showPinyin && pinyin != null) {
+            Text(
+                text = pinyin,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    fontSize = pinyinFontSize,
+                    fontWeight = FontWeight.Normal
+                ),
+                lineHeight = 17.sp  // 行间距
+            )
         }
 
-        // 日文名显示（保持现有的罗马音转换）
+        // 日文名显示
         Text(
-            text = if (showPinyin) PinyinUtils.convertJapaneseToRomaji(japaneseName) else japaneseName,
+            text = displayJapaneseName,
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                fontSize = 14.sp
+                fontSize = japaneseNameFontSize
             ),
-            lineHeight = if (showPinyin) 24.sp else 18.sp
+            lineHeight = 17.sp    // 行间距
         )
     }
 }
-
-
-
 
 @Composable
 private fun GridLayout(items: List<Pair<String, String>>) {
@@ -766,16 +933,20 @@ private fun InfoItem(
 ) {
     val context = LocalContext.current
 
-    // 调整高度和布局以适应单列
+    // 使用remember缓存背景颜色和文本样式，避免重组时重复创建
+    val backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh
+    val labelStyle = MaterialTheme.typography.labelSmall
+    val labelColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+    val valueStyle = MaterialTheme.typography.bodyMedium
+    val valueColor = MaterialTheme.colorScheme.onSurface
+
     Column(
         modifier = modifier
-            .height(55.dp)
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                color = backgroundColor,
                 shape = MaterialTheme.shapes.small
             )
             .padding(8.dp)
-            // 添加长按手势
             .combinedClickable(
                 onClick = { /* 普通点击不做处理 */ },
                 onLongClick = {
@@ -785,487 +956,14 @@ private fun InfoItem(
     ) {
         Text(
             text = label,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+            style = labelStyle,
+            color = labelColor
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = value,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            style = valueStyle,
+            color = valueColor
         )
     }
-}
-
-
-
-@Composable
-fun ProfileScreen(settingsManager: SettingsManager) {
-    // 状态管理 - 使用rememberSaveable保持配置变更
-    var showThemeDialog by rememberSaveable { mutableStateOf(false) }
-    var showTextSizeDialog by rememberSaveable { mutableStateOf(false) }
-    var showDisclaimer by rememberSaveable { mutableStateOf(false) }
-    var remainingTime by remember { mutableIntStateOf(7) }
-    var showDarkRealmSnackbar by remember { mutableStateOf(false) }
-
-    // 状态收集
-    val themeMode by settingsManager.themeModeFlow.collectAsState(
-        initial = SettingsManager.ThemeMode.FOLLOW_SYSTEM
-    )
-    val textSize by settingsManager.textSizeFlow.collectAsState(
-        initial = SettingsManager.TextSize.FOLLOW_SYSTEM
-    )
-
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // 主布局：使用垂直滚动以适应小屏幕
-    Box(modifier = Modifier.fillMaxSize()) {
-        // 主内容区：使用垂直滚动
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // 版本号条目（点击后满足条件触发免责声明）
-            VersionEntry(
-                versionName = getVersionName(context),
-                onSecretActivated = { showDisclaimer = true }
-            )
-
-            // 文字大小设置
-            TextSizeSettingCard(
-                currentSize = textSize,
-                onClick = { showTextSizeDialog = true }
-            )
-
-            // 主题设置长条
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { showThemeDialog = true },
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 4.dp
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = "主题模式",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = when (themeMode) {
-                                SettingsManager.ThemeMode.FOLLOW_SYSTEM -> "跟随系统"
-                                SettingsManager.ThemeMode.LIGHT -> "浅色"
-                                SettingsManager.ThemeMode.DARK -> "深色"
-                            },
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                            contentDescription = "箭头",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                }
-                val showPinyin by settingsManager.showPinyinFlow.collectAsState(initial = false)
-
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            coroutineScope.launch {
-                                settingsManager.setShowPinyin(!showPinyin)
-                            }
-                        },
-                    shape = MaterialTheme.shapes.medium,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 2.dp,
-                        pressedElevation = 4.dp
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            text = "百科卡片显示拼音及罗马音",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        )
-                        Switch(
-                            checked = showPinyin,
-                            onCheckedChange = {
-                                coroutineScope.launch {
-                                    settingsManager.setShowPinyin(it)
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        // Snackbar主机
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
-    }
-
-    // 文字大小对话框
-    if (showTextSizeDialog) {
-        TextSizeSelectionDialog(
-            currentSize = textSize,
-            onDismiss = { showTextSizeDialog = false },
-            onSizeSelected = { size ->
-                coroutineScope.launch {
-                    settingsManager.setTextSize(size)
-                }
-                showTextSizeDialog = false
-            }
-        )
-    }
-
-    // 主题选择对话框
-    if (showThemeDialog) {
-        ThemeSelectionDialog(
-            currentMode = themeMode,
-            onDismiss = { showThemeDialog = false },
-            onThemeSelected = { mode ->
-                coroutineScope.launch {
-                    settingsManager.setThemeMode(mode)
-                }
-            }
-        )
-    }
-
-    // 免责声明对话框
-    if (showDisclaimer) {
-        DisclaimerDialog(
-            remainingTime = remainingTime,
-            onConfirm = {
-                coroutineScope.launch {
-                    settingsManager.setShowCoefficient(true)
-                }
-                showDisclaimer = false
-                showDarkRealmSnackbar = true
-            },
-            onDismiss = {
-                showDisclaimer = false
-                remainingTime = 7 // 重置倒计时
-            }
-        ) { newTime ->
-            remainingTime = newTime
-        }
-    }
-
-    // 显示提示"您已进入黑暗领域"
-    if (showDarkRealmSnackbar) {
-        LaunchedEffect(Unit) {
-            snackbarHostState.showSnackbar("您已进入黑暗领域")
-            showDarkRealmSnackbar = false
-        }
-    }
-}
-
-
-@Composable
-private fun TextSizeSettingCard(
-    currentSize: SettingsManager.TextSize,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 4.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "文字大小",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = when (currentSize) {
-                        SettingsManager.TextSize.FOLLOW_SYSTEM -> "跟随系统"
-                        SettingsManager.TextSize.SMALL -> "小号"
-                        SettingsManager.TextSize.MEDIUM -> "中号"
-                        SettingsManager.TextSize.LARGE -> "大号"
-                    },
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                    contentDescription = "箭头",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TextSizeSelectionDialog(
-    currentSize: SettingsManager.TextSize,
-    onDismiss: () -> Unit,
-    onSizeSelected: (SettingsManager.TextSize) -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("选择文字大小") },
-        text = {
-            Column {
-                SettingsManager.TextSize.entries.forEach { size ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSizeSelected(size) }
-                    ) {
-                        RadioButton(
-                            selected = size == currentSize,
-                            onClick = { onSizeSelected(size) }
-                        )
-                        Text(
-                            text = when (size) {
-                                SettingsManager.TextSize.FOLLOW_SYSTEM -> "跟随系统 (默认)"
-                                SettingsManager.TextSize.SMALL -> "小号 (更紧凑)"
-                                SettingsManager.TextSize.MEDIUM -> "中号 (推荐)"
-                                SettingsManager.TextSize.LARGE -> "大号 (更易读)"
-                            },
-                            modifier = Modifier.padding(start = 16.dp)
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("确定")
-            }
-        }
-    )
-}
-
-
-
-@Composable
-private fun VersionEntry(
-    versionName: String,
-    onSecretActivated: () -> Unit
-) {
-    // 使用remember记住点击状态
-    var clickCount by remember { mutableIntStateOf(0) }
-    var lastClickTime by remember { mutableLongStateOf(0L) }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                val now = System.currentTimeMillis()
-                // 检测连续点击
-                if (now - lastClickTime < 1000) {
-                    clickCount++
-                    if (clickCount >= 7) {
-                        onSecretActivated()
-                        clickCount = 0
-                    }
-                } else {
-                    clickCount = 1
-                }
-                lastClickTime = now
-            },
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            pressedElevation = 4.dp
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "版本号",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.primary
-                )
-            )
-            Text(
-                text = versionName,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun DisclaimerDialog(
-    remainingTime: Int,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-    updateTime: (Int) -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        // 禁止点击对话框外部和返回键自动 dismiss
-        properties = DialogProperties(
-            dismissOnClickOutside = false,
-            dismissOnBackPress = false
-        ),
-        title = {
-            Text(
-                text = "⚠️ 免责声明",
-                color = MaterialTheme.colorScheme.error
-            )
-        },
-        text = {
-            Column {
-                Text("你想成为Z87吗？")
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "请仔细阅读条款（剩余 ${remainingTime}s）",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm,
-                enabled = remainingTime <= 0
-            ) {
-                Text("确认")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        }
-    )
-
-    // 倒计时处理
-    LaunchedEffect(Unit) {
-        for (i in 7 downTo 1) {
-            updateTime(i)
-            delay(1000)
-        }
-        updateTime(0)
-    }
-}
-
-// 获取版本号的辅助函数
-private fun getVersionName(context: Context): String {
-    return try {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
-    } catch (e: Exception) {
-        "1.0.0"
-    }
-}
-
-@Composable
-fun ThemeSelectionDialog(
-    currentMode: SettingsManager.ThemeMode,
-    onDismiss: () -> Unit,
-    onThemeSelected: (SettingsManager.ThemeMode) -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("选择主题") },
-        text = {
-            Column {
-                // 使用for循环优化性能
-                for (mode in SettingsManager.ThemeMode.entries) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onThemeSelected(mode) }
-                            .padding(16.dp)
-                    ) {
-                        RadioButton(
-                            selected = mode == currentMode,
-                            onClick = { onThemeSelected(mode) }
-                        )
-                        Text(
-                            text = when (mode) {
-                                SettingsManager.ThemeMode.FOLLOW_SYSTEM -> "跟随系统"
-                                SettingsManager.ThemeMode.LIGHT -> "浅色模式"
-                                SettingsManager.ThemeMode.DARK -> "深色模式"
-                            },
-                            modifier = Modifier.padding(start = 20.dp),
-                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 18.sp)
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
-        }
-    )
 }
