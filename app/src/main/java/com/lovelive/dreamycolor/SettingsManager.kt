@@ -48,7 +48,7 @@ class SettingsManager(private val context: Context) {
      * @return Flow<Boolean> 系数显示状态的数据流，true表示显示，false表示隐藏
      */
     val showCoefficientFlow = context.dataStore.data.map { preferences ->
-        preferences[SHOW_COEFFICIENT] ?: false
+        preferences[SHOW_COEFFICIENT] == true
     }
 
     /**
@@ -57,7 +57,7 @@ class SettingsManager(private val context: Context) {
      * @return Flow<Boolean> 拼音显示状态的数据流，true表示显示，false表示隐藏
      */
     val showPinyinFlow = context.dataStore.data.map { preferences ->
-        preferences[SHOW_PINYIN] ?: false
+        preferences[SHOW_PINYIN] == true
     }
     
     /**

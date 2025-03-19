@@ -3,7 +3,6 @@ package com.lovelive.dreamycolor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -11,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 /**
@@ -94,39 +92,6 @@ fun SectionTitle(
                 .weight(1f)
                 .height(2.dp),
             color = color.copy(alpha = 0.5f)
-        )
-    }
-}
-
-/**
- * 属性标签组件
- * 
- * 用于显示一个带有背景色的圆角标签，通常用来展示角色的属性、关系类型等简短信息。
- * 标签使用半透明背景和对应的文本颜色，使其在UI中突出显示。
- * 
- * @param modifier 应用于组件的修饰符
- * @param text 标签显示的文本内容
- * @param color 标签的主色调，默认使用Material主题的primary颜色
- */
-@Composable
-fun AttributeChip(
-    modifier: Modifier = Modifier,
-    text: String,
-    color: Color = MaterialTheme.colorScheme.primary
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = color.copy(alpha = 0.2f)
-    ) {
-        Text(
-            text = text,
-            color = color,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            textAlign = TextAlign.Center
         )
     }
 }
