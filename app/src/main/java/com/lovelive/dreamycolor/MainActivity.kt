@@ -62,17 +62,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.SizeTransform
-
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugins.GeneratedPluginRegistrant
-
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
-
 import android.util.Log
 
 /**
@@ -100,14 +95,14 @@ data class DialogConfig(
  * 负责初始化主题设置、资源管理和UI界面的构建
  */
 class MainActivity : ComponentActivity() {
-    private val CHANNEL = "com.example.dreamy_color/channel"
+    private val channelName = "com.example.dreamy_color/channel"
     private lateinit var channel: MethodChannel
 
     private val settingsManager by lazy { SettingsManager(this) }
     // 添加ResourceManager实例
     private val resourceManager by lazy { ResourceManager.getInstance(this) }
 
-    private val FLUTTER_ENGINE_ID = "dreamycolor_flutter_engine"
+    private val flutterEngineId = "dreamycolor_flutter_engine"
     private lateinit var flutterEngine: FlutterEngine
 
     // 处理来自Flutter的消息
@@ -148,7 +143,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
         initFlutterEngine()
 
         // 初始化MethodChannel
-        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
 
         // 设置方法调用处理器
         channel.setMethodCallHandler { call, result ->
@@ -234,14 +229,14 @@ override fun onCreate(savedInstanceState: Bundle?) {
         GeneratedPluginRegistrant.registerWith(flutterEngine)
 
         // 缓存引擎以便重用
-        FlutterEngineCache.getInstance().put(FLUTTER_ENGINE_ID, flutterEngine)
+        FlutterEngineCache.getInstance().put(flutterEngineId, flutterEngine)
     }
 
     // 添加启动Flutter界面的方法
     fun startFlutterActivity() {
         startActivity(
             FlutterActivity
-                .withCachedEngine(FLUTTER_ENGINE_ID)
+                .withCachedEngine(flutterEngineId)
                 .build(this)
         )
     }

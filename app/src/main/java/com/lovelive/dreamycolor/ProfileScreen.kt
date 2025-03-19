@@ -23,8 +23,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.window.DialogProperties
 import android.os.Handler
 import android.os.Looper
-
-
+import androidx.core.content.pm.PackageInfoCompat
 /**
  * 个人设置界面
  * 
@@ -74,9 +73,10 @@ fun ProfileScreen(settingsManager: SettingsManager) {
 
             // 版本号条目（点击后满足条件触发免责声明）
             VersionEntry(
-                versionName = getVersionName(context),
+                versionName = getVersionNameAndCode(context),
                 onSecretActivated = { showDisclaimer = true }
             )
+
 
             // 文字大小设置
             TextSizeSettingCard(
@@ -514,11 +514,11 @@ private fun TextSizeSelectionDialog(
 
 /**
  * 版本信息条目组件
- * 
+ *
  * 显示应用当前版本号，包含隐藏功能：
  * 在1秒内连续点击7次可触发免责声明对话框
- * 
- * @param versionName 应用版本号
+ *
+ * @param versionName 应用版本号和版本代码
  * @param onSecretActivated 触发隐藏功能时的回调
  */
 @Composable
@@ -578,6 +578,7 @@ private fun VersionEntry(
         }
     }
 }
+
 
 /**
  * 免责声明对话框
@@ -645,20 +646,23 @@ private fun DisclaimerDialog(
     }
 }
 
-// 获取版本号的辅助函数
+// 获取应用版本号和版本代码
 /**
- * 获取应用版本号
- * 
+ * 获取应用版本号和版本代码
+ *
  * @param context 应用上下文
- * @return 应用版本号，获取失败时返回默认值"1.0.0"
+ * @return 应用版本号和版本代码，获取失败时返回默认值"1.0 (0)"
  */
-private fun getVersionName(context: Context): String {
+private fun getVersionNameAndCode(context: Context): String {
     return try {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0.0"
-    } catch (e: Exception) {
-        "1.0.0"
+        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+        "${packageInfo.versionName} ($versionCode)"
+    } catch (_: Exception) { // 使用 _ 忽略未使用的参数
+        "1.0 (0)"
     }
 }
+
 
 /**
  * 主题模式选择对话框
