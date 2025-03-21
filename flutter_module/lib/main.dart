@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'profile_screen.dart';
 
 void main() => runApp(const MyApp());
 
@@ -14,6 +15,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: {
+        '/profile': (context) => const ProfileScreen(),
+      },
     );
   }
 }
@@ -104,6 +108,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: _sendMessageToNative,
               child: const Text('发送消息到 Native'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/profile');
+              },
+              child: const Text('打开个人设置页面'),
             ),
           ],
         ),

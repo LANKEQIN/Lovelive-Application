@@ -430,7 +430,7 @@ fun MainContent(settingsManager: SettingsManager) {
                                         encyclopediaDimension = dimension
                                     }
                                 )
-                                3 -> ProfileScreen(settingsManager = settingsManager) // 添加 ProfileScreen
+                                3 -> ProfileScreen(settingsManager = settingsManager)
                             }
                         }
                     }
@@ -442,13 +442,11 @@ fun MainContent(settingsManager: SettingsManager) {
 
 
 // Website数据类和相关函数已迁移到InspirationScreen.kt
-
-
-
 // InspirationScreen已迁移到InspirationScreen.kt文件中
-
-
 // 相关子屏幕已迁移到InspirationScreen.kt文件中
+
+
+
 
 /**
  * 分组项密封类，用于百科页面的列表项类型定义
