@@ -62,7 +62,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.SizeTransform
-import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -113,23 +112,6 @@ class MainActivity : ComponentActivity() {
         } ?: result.error("INVALID_MESSAGE", "Message was null", null)
     }
 
-
-    // 向Flutter发送消息的方法
-    fun sendMessageToFlutter(message: String) {
-        runOnUiThread {
-            channel.invokeMethod("messageFromNative", message, object : MethodChannel.Result {
-                override fun success(result: Any?) {
-                    Log.d("Native Message", "Flutter response: $result")
-                }
-                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                    Log.e("Native Message", "Error: $errorCode, $errorMessage")
-                }
-                override fun notImplemented() {
-                    Log.w("Native Message", "Method not implemented")
-                }
-            })
-        }
-    }
 
     /**
  * Activity创建时的回调方法
@@ -231,16 +213,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
         // 缓存引擎以便重用
         FlutterEngineCache.getInstance().put(flutterEngineId, flutterEngine)
     }
-
-    // 添加启动Flutter界面的方法
-    fun startFlutterActivity() {
-        startActivity(
-            FlutterActivity
-                .withCachedEngine(flutterEngineId)
-                .build(this)
-        )
-    }
-
 
 
     // 添加预加载资源的方法
