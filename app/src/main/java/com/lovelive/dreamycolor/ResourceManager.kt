@@ -15,6 +15,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asStateFlow
+
 
 /**
  * 资源管理器类，负责预加载和缓存应用中经常使用的资源
@@ -26,6 +28,10 @@ class ResourceManager private constructor(context: Context) {
 
     // 资源加载协程作用域
     private val resourceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    
+    // 资源加载完成状态
+    private val _isResourceLoadingComplete = MutableStateFlow(false)
+    val isResourceLoadingComplete = _isResourceLoadingComplete.asStateFlow()
 
     companion object {
         private const val TAG = "ResourceManager"
@@ -64,6 +70,8 @@ class ResourceManager private constructor(context: Context) {
     // 字符串资源缓存
     private val stringCache = LruCache<Int, String>(100)
 
+
+
     /**
      * 资源加载优先级
      */
@@ -79,6 +87,12 @@ class ResourceManager private constructor(context: Context) {
      * @param priority 加载优先级，默认为MEDIUM
      * @param batchSize 批量处理的大小，默认为10
      */
+
+
+
+
+
+
     fun preloadDrawables(
         resourceIds: List<Int>,
         priority: LoadPriority = LoadPriority.MEDIUM,
@@ -199,4 +213,76 @@ class ResourceManager private constructor(context: Context) {
             }
         }
     }
+    
+    /**
+     * 预加载所有页面资源
+     * 该方法会预加载应用中所有页面所需的资源，包括图片和字符串资源
+     * 建议在应用启动时调用，以减少页面切换时的加载延迟
+     */
+    fun preloadAllPageResources() {
+        resourceScope.launch {
+            try {
+                _resourceState.value = ResourceState.Loading
+                Log.d(TAG, "开始预加载所有页面资源")
+                
+                // 预加载导航栏相关资源（高优先级）
+                val navigationStringIds = listOf(
+                    R.string.navigation_exclusive,
+                    R.string.navigation_inspiration,
+                    R.string.navigation_encyclopedia,
+                    R.string.navigation_profile,
+                    R.string.app_name,
+                    R.string.splash_text
+                )
+                preloadStrings(navigationStringIds, LoadPriority.HIGH)
+                
+                // 预加载专属页面资源（中优先级）
+                val exclusiveDrawables = listOf(
+                    R.drawable.ic_launcher_background
+                    // 添加专属页面的其他图片资源
+                )
+                preloadDrawables(exclusiveDrawables, LoadPriority.MEDIUM)
+                
+                // 预加载灵感页面资源（中优先级）
+                val inspirationDrawables = listOf<Int>(
+                    // 添加灵感页面的图片资源
+                )
+                if (inspirationDrawables.isNotEmpty()) {
+                    preloadDrawables(inspirationDrawables, LoadPriority.MEDIUM)
+                }
+                
+                // 预加载百科页面资源（高优先级，因为这个页面最卡）
+                val encyclopediaDrawables = listOf(
+                    R.drawable.ic_honoka_head
+                    // 添加百科页面的其他图片资源
+                )
+                preloadDrawables(encyclopediaDrawables, LoadPriority.HIGH)
+                
+                // 预加载个人资料页面资源（低优先级）
+                val profileDrawables = listOf<Int>(
+                    // 添加个人资料页面的图片资源
+                )
+                if (profileDrawables.isNotEmpty()) {
+                    preloadDrawables(profileDrawables, LoadPriority.LOW)
+                }
+                
+                // 预加载角色详情页面资源（中优先级）
+                val characterDetailDrawables = listOf(
+                    R.drawable.ic_honoka_head
+                    // 添加角色详情页面的其他图片资源
+                )
+                preloadDrawables(characterDetailDrawables, LoadPriority.MEDIUM)
+                
+                // 设置资源加载完成状态
+                _resourceState.value = ResourceState.Success
+                _isResourceLoadingComplete.value = true
+                Log.d(TAG, "所有页面资源预加载完成")
+            } catch (e: Exception) {
+                _resourceState.value = ResourceState.Error(e.message ?: "预加载资源失败")
+                Log.e(TAG, "预加载所有页面资源失败: ${e.message}")
+            }
+        }
+    }
 }
+
+

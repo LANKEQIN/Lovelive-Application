@@ -68,6 +68,18 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugins.GeneratedPluginRegistrant
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.material3.ripple
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
 
 /**
  * 对话框配置数据类，用于统一管理对话框的显示内容和交互行为
@@ -112,12 +124,32 @@ class MainActivity : ComponentActivity() {
         } ?: result.error("INVALID_MESSAGE", "Message was null", null)
     }
 
+    // 预加载资源的优先级分配
+    private fun preloadResources() {
+        // 使用ResourceManager预加载所有页面资源
+        resourceManager.preloadAllPageResources()
+
+        // 监听资源加载完成状态
+        lifecycleScope.launch {
+            resourceManager.isResourceLoadingComplete.collect { isComplete: Boolean ->
+                if (isComplete) {
+                    Log.d("MainActivity", "所有页面资源预加载完成，页面切换将更加流畅")
+                }
+            }
+        }
+    }
+
+
+
 
     /**
  * Activity创建时的回调方法
  * 初始化主题设置、启用边缘到边缘显示，并设置主界面内容
  */
 override fun onCreate(savedInstanceState: Bundle?) {
+        // 添加性能监控
+        val startTime = System.currentTimeMillis()
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -142,8 +174,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
             }
         }
 
-        // 预加载常用资源
-        preloadResources()
 
         setContent {
             val themeMode by settingsManager.themeModeFlow.collectAsState(
@@ -196,6 +226,10 @@ override fun onCreate(savedInstanceState: Bundle?) {
                 }
             }
         }
+        // 记录启动时间
+        val launchTime = System.currentTimeMillis() - startTime
+        Log.d("Performance", "Activity启动耗时: $launchTime ms")
+
     }
 
 
@@ -212,25 +246,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
         // 缓存引擎以便重用
         FlutterEngineCache.getInstance().put(flutterEngineId, flutterEngine)
-    }
-
-
-    // 添加预加载资源的方法
-    private fun preloadResources() {
-        // 预加载常用字符串资源
-        val commonStringIds = listOf(
-            R.string.app_name,
-            R.string.splash_text
-            // 可以根据需要添加更多常用字符串资源ID
-        )
-        resourceManager.preloadStrings(commonStringIds)
-        
-        // 预加载常用图片资源
-        val commonDrawableIds = listOf(
-            R.drawable.ic_launcher_background
-            // 可以根据需要添加更多常用图片资源ID
-        )
-        resourceManager.preloadDrawables(commonDrawableIds)
     }
 }
 
@@ -298,6 +313,9 @@ fun MainContent(settingsManager: SettingsManager) {
     // 使用rememberSaveable保持页面状态在配置更改时不丢失
     val pagerState = rememberPagerState(pageCount = { items.size }, initialPage = selectedTabIndex)
 
+    // 添加惰性初始化的状态标志
+    var encyclopediaInitialized by remember { mutableStateOf(false) }
+
 
     // 确保pagerState和selectedTabIndex保持同步
     LaunchedEffect(selectedTabIndex) {
@@ -308,6 +326,11 @@ fun MainContent(settingsManager: SettingsManager) {
     LaunchedEffect(pagerState.currentPage) {
         if (pagerState.currentPage != selectedTabIndex) {
             selectedTabIndex = pagerState.currentPage
+        }
+        // 只有当切换到百科标签页时，才标记其为已初始化
+        if (pagerState.currentPage == 2) {
+            encyclopediaInitialized = true
+
         }
     }
     Scaffold(
@@ -342,19 +365,29 @@ fun MainContent(settingsManager: SettingsManager) {
             }
         }
     ) { innerPadding ->
-        // 页面切换动画
+        // 使用 AnimatedContent 带缓动动画
         AnimatedContent(
             targetState = currentScreen,
             modifier = Modifier.padding(innerPadding),
             transitionSpec = {
-                // 替换原有的淡入淡出动画为左右平移动画
                 val slideDirection = if (targetState == null)
-                    slideInHorizontally { -it } togetherWith
-                            slideOutHorizontally { it }
+                    slideInHorizontally(
+                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                        initialOffsetX = { -it }
+                    ) togetherWith
+                            slideOutHorizontally(
+                                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                                targetOffsetX = { it }
+                            )
                 else
-                    slideInHorizontally { it } togetherWith
-                            slideOutHorizontally { -it }
-
+                    slideInHorizontally(
+                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                        initialOffsetX = { it }
+                    ) togetherWith
+                            slideOutHorizontally(
+                                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                                targetOffsetX = { -it }
+                            )
                 slideDirection.using(SizeTransform(clip = false))
             }
         ) { screen ->
@@ -379,29 +412,44 @@ fun MainContent(settingsManager: SettingsManager) {
                             modifier = Modifier.fillMaxSize(),
                             userScrollEnabled = true, // 允许用户滑动
                             pageSpacing = 0.dp, // 页面间距
-                            // 使用最新版本的HorizontalPager API
+                            key = { items[it].titleRes } // 添加key提高性能
                         ) { page ->
                             when (page) {
                                 0 -> ExclusiveScreen()
                                 1 -> InspirationScreen()
-                                2 -> EncyclopediaScreen(
-                                    onCharacterClick = { name ->
-                                        characterName = name
-                                        currentScreen = "character_detail"
-                                    },
-                                    onVoiceActorClick = { name ->
-                                        voiceActorName = name
-                                        currentScreen = "voice_actor_detail"
-                                    },
-                                    initialScrollPosition = encyclopediaScrollPosition,
-                                    onScrollPositionChange = { position ->
-                                        encyclopediaScrollPosition = position
-                                    },
-                                    initialDimension = encyclopediaDimension,
-                                    onDimensionChange = { dimension ->
-                                        encyclopediaDimension = dimension
+                                2 -> {
+                                    // 懒加载EncyclopediaScreen
+                                    // 只有当选中该Tab或已经初始化过时才渲染
+                                    if (selectedTabIndex == 2 || encyclopediaInitialized) {
+                                        key(page) { // 使用key避免不必要的重组
+                                            EncyclopediaScreen(
+                                                onCharacterClick = { name ->
+                                                    characterName = name
+                                                    currentScreen = "character_detail"
+                                                },
+                                                onVoiceActorClick = { name ->
+                                                    voiceActorName = name
+                                                    currentScreen = "voice_actor_detail"
+                                                },
+                                                initialScrollPosition = encyclopediaScrollPosition,
+                                                onScrollPositionChange = { position ->
+                                                    encyclopediaScrollPosition = position
+                                                },
+                                                initialDimension = encyclopediaDimension,
+                                                onDimensionChange = { dimension ->
+                                                    encyclopediaDimension = dimension
+                                                }
+                                            )
+                                        }
+                                    } else {
+                                        // 显示一个占位符，减少初始化时的资源消耗
+                                        Box(modifier = Modifier.fillMaxSize()) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.align(Alignment.Center)
+                                            )
+                                        }
                                     }
-                                )
+                                }
                                 3 -> ProfileScreen(settingsManager = settingsManager)
                             }
                         }
@@ -429,6 +477,7 @@ sealed class GroupItem {
     data class Character(val data: CharacterCard) : GroupItem()
     data class VoiceActor(val data: VoiceActorCard) : GroupItem()
 }
+
 
 
 /**
@@ -515,106 +564,115 @@ fun EncyclopediaScreen(
         }
     }
 
-    // 移除滚动监听逻辑和isFabVisible状态变量
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
+            // 使用AnimatedContent来平滑切换维度按钮
+            AnimatedContent(
+                targetState = currentDimension,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith
+                            fadeOut(animationSpec = tween(300))
+                }
+            ) { dimension ->
+                Row(
                     modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.secondaryContainer,
-                            MaterialTheme.shapes.medium
-                        )
-                        .padding(4.dp)
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.secondaryContainer,
+                                MaterialTheme.shapes.medium
+                            )
+                            .padding(4.dp)
                     ) {
-                        DimensionButton(
-                            text = "角色",
-                            selected = currentDimension == "角色",
-                            onClick = { currentDimension = "角色" }
-                        )
-                        DimensionButton(
-                            text = "声优",
-                            selected = currentDimension == "声优",
-                            onClick = { currentDimension = "声优" }
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            DimensionButton(
+                                text = "角色",
+                                selected = dimension == "角色",
+                                onClick = { currentDimension = "角色" }
+                            )
+                            DimensionButton(
+                                text = "声优",
+                                selected = dimension == "声优",
+                                onClick = { currentDimension = "声优" }
+                            )
+                        }
                     }
                 }
             }
+            // 使用key来确保切换维度时列表完全重建
+            key(currentDimension) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    state = listState
+                ) {
+                    val items = if (currentDimension == "角色")
+                        characterItems.value
+                    else
+                        voiceActorItems.value
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                state = listState
-            ) {
-                val items = if (currentDimension == "角色") characterItems.value else voiceActorItems.value
-                items(
-                    items = items,
-                    span = { item ->
-                        when (item) {
-                            is GroupItem.Header -> GridItemSpan(2)
-                            else -> GridItemSpan(1)
-                        }
-                    },
-                    key = { item ->
-                        when (item) {
-                            is GroupItem.Header -> "header_${item.title}"
-                            is GroupItem.Character -> "character_${item.data.name}"
-                            is GroupItem.VoiceActor -> "voiceactor_${item.data.name}"
-                        }
-                    }
-                ) { item ->
-                    when (item) {
-                        is GroupItem.Header -> GroupHeader(
-                            title = item.title,
-                            expanded = expandedGroups[item.title] != false,
-                            onExpandedChange = {
-                                expandedGroups = expandedGroups.toMutableMap().apply {
-                                    this[item.title] = this[item.title] == false
-                                }
+                    items(
+                        items = items,
+                        span = { item ->
+                            when (item) {
+                                is GroupItem.Header -> GridItemSpan(2)
+                                else -> GridItemSpan(1)
                             }
-                        )
-                        is GroupItem.Character -> {
-                            // 不再需要AnimatedVisibility，因为我们在构建列表时已经过滤了
-                            CharacterCardUI(
-                                character = item.data,
-                                showPinyin = showPinyin,
-                                onClick = { character ->
-                                    previousDimension = currentDimension
-                                    selectedCharacter = character
-                                }
-                            )
+                        },
+                        key = { item ->
+                            when (item) {
+                                is GroupItem.Header -> "header_${item.title}"
+                                is GroupItem.Character -> "character_${item.data.name}"
+                                is GroupItem.VoiceActor -> "voiceactor_${item.data.name}"
+                            }
                         }
-                        is GroupItem.VoiceActor -> {
-                            // 不再需要AnimatedVisibility，因为我们在构建列表时已经过滤了
-                            VoiceActorCardUI(
-                                voiceActor = item.data,
-                                showCoefficient = showCoefficient,
-                                showPinyin = showPinyin,
-                                onClick = { voiceActor ->
-                                    previousDimension = currentDimension
-                                    selectedVoiceActor = voiceActor
+                    ) { item ->
+                        when (item) {
+                            is GroupItem.Header -> GroupHeader(
+                                title = item.title,
+                                expanded = expandedGroups[item.title] != false,
+                                onExpandedChange = {
+                                    expandedGroups = expandedGroups.toMutableMap().apply {
+                                        this[item.title] = this[item.title] == false
+                                    }
                                 }
                             )
+                            is GroupItem.Character -> {
+                                CharacterCardUI(
+                                    character = item.data,
+                                    showPinyin = showPinyin,
+                                    onClick = { character ->
+                                        previousDimension = currentDimension
+                                        selectedCharacter = character
+                                    }
+                                )
+                            }
+                            is GroupItem.VoiceActor -> {
+                                VoiceActorCardUI(
+                                    voiceActor = item.data,
+                                    showCoefficient = showCoefficient,
+                                    showPinyin = showPinyin,
+                                    onClick = { voiceActor ->
+                                        previousDimension = currentDimension
+                                        selectedVoiceActor = voiceActor
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-
-        // 移除刷新按钮相关代码
     }
 
     selectedCharacter?.let { character ->
@@ -660,7 +718,6 @@ fun EncyclopediaScreen(
     }
 }
 
-// 新增：分组标题组件
 @Composable
 fun GroupHeader(
     title: String,
@@ -668,36 +725,53 @@ fun GroupHeader(
     onExpandedChange: () -> Unit = {},
     verticalPadding: Dp = 12.dp
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.secondaryContainer,
-                MaterialTheme.shapes.medium
-            )
-            .padding(horizontal = 12.dp, vertical = verticalPadding)
-            .clickable { onExpandedChange() },
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 1.dp
     ) {
-        AnimatedVisibility(
-            visible = true,
-            enter = fadeIn(animationSpec = tween(durationMillis = 200)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 200))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null, // 移除手动指定的 Ripple，使用默认主题 Ripple
+                    onClick = onExpandedChange
+                )
+                .padding(horizontal = 12.dp, vertical = verticalPadding),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                )
+            )
+
+            val rotation by animateFloatAsState(
+                targetValue = if (expanded) 180f else 0f,
+                animationSpec = tween(durationMillis = 300),
+                label = "rotation"
+            )
+
+            Icon(
+                imageVector = Icons.Default.ExpandMore,
+                contentDescription = if (expanded) "折叠" else "展开",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = rotation // 使用 graphicsLayer 设置旋转角度
+                }
             )
         }
-        Icon(
-            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-            contentDescription = if (expanded) "折叠" else "展开",
-            tint = MaterialTheme.colorScheme.onSecondaryContainer
-        )
     }
 }
+
 
 @Composable
 private fun DimensionButton(
@@ -705,20 +779,36 @@ private fun DimensionButton(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(durationMillis = 300),
+        label = "backgroundColor"
+    )
+
+    val textColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onPrimary
+        else MaterialTheme.colorScheme.onSurface,
+        animationSpec = tween(durationMillis = 300),
+        label = "textColor"
+    )
+
     Box(
         modifier = Modifier
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(bounded = true),
+                onClick = onClick
+            )
             .background(
-                if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surface,
+                backgroundColor,
                 MaterialTheme.shapes.small
             )
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
             text = text,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary
-            else MaterialTheme.colorScheme.onSurface,
+            color = textColor,
             style = MaterialTheme.typography.bodyMedium
         )
     }
