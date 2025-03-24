@@ -59,9 +59,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.SizeTransform
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
@@ -79,6 +76,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.ripple
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import kotlin.math.absoluteValue
 
 
 /**
@@ -317,6 +315,8 @@ fun MainContent(settingsManager: SettingsManager) {
     var encyclopediaInitialized by remember { mutableStateOf(false) }
 
 
+
+
     // 确保pagerState和selectedTabIndex保持同步
     LaunchedEffect(selectedTabIndex) {
         if (pagerState.currentPage != selectedTabIndex) {
@@ -342,11 +342,12 @@ fun MainContent(settingsManager: SettingsManager) {
                         NavigationBarItem(
                             icon = {},
                             label = {
-                                val textStyle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    MaterialTheme.typography.labelMedium
-                                } else {
-                                    LocalTextStyle.current
-                                }
+                                val textStyle =
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        MaterialTheme.typography.labelMedium
+                                    } else {
+                                        LocalTextStyle.current
+                                    }
                                 Text(
                                     text = stringResource(id = screen.titleRes),
                                     style = textStyle.copy(
@@ -370,26 +371,21 @@ fun MainContent(settingsManager: SettingsManager) {
             targetState = currentScreen,
             modifier = Modifier.padding(innerPadding),
             transitionSpec = {
-                val slideDirection = if (targetState == null)
-                    slideInHorizontally(
-                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                        initialOffsetX = { -it }
-                    ) togetherWith
-                            slideOutHorizontally(
-                                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                                targetOffsetX = { it }
+                // 修改为淡入淡出动画
+                fadeIn(
+                    animationSpec = tween(
+                        durationMillis = 300,
+                        easing = FastOutSlowInEasing
+                    )
+                ) togetherWith
+                        fadeOut(
+                            animationSpec = tween(
+                                durationMillis = 300,
+                                easing = FastOutSlowInEasing
                             )
-                else
-                    slideInHorizontally(
-                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                        initialOffsetX = { it }
-                    ) togetherWith
-                            slideOutHorizontally(
-                                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
-                                targetOffsetX = { -it }
-                            )
-                slideDirection.using(SizeTransform(clip = false))
+                        )
             }
+
         ) { screen ->
             when (screen) {
                 "character_detail" -> CharacterDetailScreen(
@@ -398,59 +394,58 @@ fun MainContent(settingsManager: SettingsManager) {
                         currentScreen = null
                     }
                 )
+
                 "voice_actor_detail" -> VoiceActorDetailScreen(
                     voiceActorName = voiceActorName,
                     onBackPressed = {
                         currentScreen = null
                     }
                 )
+
                 null -> {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        // 使用HorizontalPager替代手势检测，提供更流畅的滑动体验
                         androidx.compose.foundation.pager.HorizontalPager(
                             state = pagerState,
                             modifier = Modifier.fillMaxSize(),
-                            userScrollEnabled = true, // 允许用户滑动
-                            pageSpacing = 0.dp, // 页面间距
-                            key = { items[it].titleRes } // 添加key提高性能
+                            userScrollEnabled = true, // 保留手动滑动功能
+                            pageSpacing = 0.dp,
+                            key = { items[it].titleRes }
                         ) { page ->
-                            when (page) {
-                                0 -> ExclusiveScreen()
-                                1 -> InspirationScreen()
-                                2 -> {
-                                    // 懒加载EncyclopediaScreen
-                                    // 只有当选中该Tab或已经初始化过时才渲染
-                                    if (selectedTabIndex == 2 || encyclopediaInitialized) {
-                                        key(page) { // 使用key避免不必要的重组
-                                            EncyclopediaScreen(
-                                                onCharacterClick = { name ->
-                                                    characterName = name
-                                                    currentScreen = "character_detail"
-                                                },
-                                                onVoiceActorClick = { name ->
-                                                    voiceActorName = name
-                                                    currentScreen = "voice_actor_detail"
-                                                },
-                                                initialScrollPosition = encyclopediaScrollPosition,
-                                                onScrollPositionChange = { position ->
-                                                    encyclopediaScrollPosition = position
-                                                },
-                                                initialDimension = encyclopediaDimension,
-                                                onDimensionChange = { dimension ->
-                                                    encyclopediaDimension = dimension
-                                                }
-                                            )
-                                        }
-                                    } else {
-                                        // 显示一个占位符，减少初始化时的资源消耗
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier.align(Alignment.Center)
-                                            )
+                            // 使用graphicsLayer应用淡入淡出效果
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer {
+                                        // 计算页面偏移量并应用透明度
+                                        val pageOffset =
+                                            ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
+
+                                        // 创建淡入淡出效果
+                                        // 当页面完全可见时透明度为1，滑动过程中逐渐变为0
+                                        alpha = 1f - (pageOffset * 0.8f).coerceIn(0f, 1f)
+                                    }
+                            ) {
+                                when (page) {
+                                    0 -> ExclusiveScreen()
+                                    1 -> InspirationScreen()
+                                    2 -> {
+                                        if (selectedTabIndex == 2 || encyclopediaInitialized) {
+                                            key(page) {
+                                                EncyclopediaScreen(
+                                                    // 参数保持不变...
+                                                )
+                                            }
+                                        } else {
+                                            Box(modifier = Modifier.fillMaxSize()) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.align(Alignment.Center)
+                                                )
+                                            }
                                         }
                                     }
+
+                                    3 -> ProfileScreen(settingsManager = settingsManager)
                                 }
-                                3 -> ProfileScreen(settingsManager = settingsManager)
                             }
                         }
                     }
