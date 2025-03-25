@@ -74,9 +74,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.ripple
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+
 
 
 /**
@@ -98,7 +97,6 @@ data class DialogConfig(
 )
 
 
-
 /**
  * 应用程序的主Activity，继承自ComponentActivity
  * 负责初始化主题设置、资源管理和UI界面的构建
@@ -108,8 +106,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var channel: MethodChannel
 
     private val settingsManager by lazy { SettingsManager(this) }
-    // 添加ResourceManager实例
-    private val resourceManager by lazy { ResourceManager.getInstance(this) }
 
     private val flutterEngineId = "dreamycolor_flutter_engine"
     private lateinit var flutterEngine: FlutterEngine
@@ -121,23 +117,6 @@ class MainActivity : ComponentActivity() {
             result.success("Android received: $it")
         } ?: result.error("INVALID_MESSAGE", "Message was null", null)
     }
-
-    // 预加载资源的优先级分配
-    private fun preloadResources() {
-        // 使用ResourceManager预加载所有页面资源
-        resourceManager.preloadAllPageResources()
-
-        // 监听资源加载完成状态
-        lifecycleScope.launch {
-            resourceManager.isResourceLoadingComplete.collect { isComplete: Boolean ->
-                if (isComplete) {
-                    Log.d("MainActivity", "所有页面资源预加载完成，页面切换将更加流畅")
-                }
-            }
-        }
-    }
-
-
 
 
     /**
@@ -303,9 +282,6 @@ fun MainContent(settingsManager: SettingsManager) {
     var currentScreen by rememberSaveable { mutableStateOf<String?>(null) }
     var characterName by rememberSaveable { mutableStateOf("") }
     var voiceActorName by rememberSaveable { mutableStateOf("") }
-    // 添加这个变量来记录百科卡片列表的滚动位置
-    var encyclopediaScrollPosition by rememberSaveable { mutableIntStateOf(0) }
-    var encyclopediaDimension by rememberSaveable { mutableStateOf("角色") }
     // 添加Tab选择状态作为主导航机制
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     // 使用rememberSaveable保持页面状态在配置更改时不丢失
