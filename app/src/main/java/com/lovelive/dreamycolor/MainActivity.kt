@@ -87,6 +87,8 @@ import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.animation.slideInHorizontally
+
 
 
 /**
@@ -382,8 +384,9 @@ fun MainContent(settingsManager: SettingsManager) {
             targetState = currentScreen,
             modifier = Modifier.padding(innerPadding),
             transitionSpec = {
-                // 修改为淡入淡出动画
-                fadeIn(
+                // 修改为从右侧滑入动画
+                slideInHorizontally(
+                    initialOffsetX = { it },
                     animationSpec = tween(
                         durationMillis = 300,
                         easing = FastOutSlowInEasing
@@ -446,7 +449,10 @@ fun MainContent(settingsManager: SettingsManager) {
                                                     delay(2000)
                                                 }
                                                 EncyclopediaScreen(
-                                                    // 参数保持不变...
+                                                    onCharacterClick = { name ->
+                                                        characterName = name
+                                                        currentScreen = "character_detail"
+                                                    }
                                                 )
                                             }
                                         } else {
@@ -885,7 +891,7 @@ fun VoiceActorCardUI(
             showCoefficient && showPinyin -> 340.dp
             showCoefficient -> 280.dp
             showPinyin -> 270.dp
-            else -> 240.dp
+            else -> 250.dp
         }
     }
 
@@ -940,7 +946,7 @@ fun CharacterCardUI(
             .height(
                 when {
                     showPinyin -> 270.dp
-                    else -> 240.dp
+                    else -> 250.dp
                 }
             )
             .pointerInput(Unit) {
@@ -986,12 +992,10 @@ fun CharacterCardUI(
 
 @Composable
 private fun NameSection(name: String, japaneseName: String, showPinyin: Boolean = false) {
-    // 使用remember缓存计算结果
     val height = remember(showPinyin) {
-        if (showPinyin) 70.dp else 60.dp
+        if (showPinyin) 55.dp else 50.dp
     }
 
-    // 预先计算拼音，避免在渲染时计算
     val pinyin = remember(name, showPinyin) {
         if (showPinyin) PinyinUtils.chinesePinyinMap[name] else null
     }
@@ -1016,7 +1020,9 @@ private fun NameSection(name: String, japaneseName: String, showPinyin: Boolean 
     // 根据日文名长度动态计算字体大小
     val japaneseNameFontSize = remember(japaneseName) {
         when (displayJapaneseName.length) {
-            in 0..14 -> 13.sp
+            in 0..10 -> 13.sp
+            11 -> 10.sp
+            in 12..14 -> 13.sp
             in 15..17 -> 11.sp
             18 -> 10.sp
             else -> 13.sp
