@@ -35,24 +35,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import com.lovelive.dreamycolor.data.repository.EncyclopediaRepository
-import com.lovelive.dreamycolor.database.EncyclopediaDatabase
 import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.FlutterEngineCache
-import io.flutter.embedding.engine.dart.DartExecutor
-import io.flutter.plugins.GeneratedPluginRegistrant
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.absoluteValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 
@@ -81,34 +72,10 @@ data class DialogConfig(
  * 负责初始化主题设置、资源管理和UI界面的构建
  */
 class MainActivity : ComponentActivity() {
-    private val channelName = "com.lovelive.dreamycolor/encyclopedia"
-    private lateinit var channel: MethodChannel
-
     private val settingsManager by lazy { SettingsManager(this) }
 
     private val flutterEngineId = "dreamycolor_flutter_engine"
     private lateinit var flutterEngine: FlutterEngine
-
-    // 处理来自Flutter的消息
-    private fun handleFlutterMessage(message: String?, result: MethodChannel.Result) {
-        message?.let {
-            Log.d("Flutter Message", "Received message from Flutter: $it")
-            result.success("Android received: $it")
-        } ?: result.error("INVALID_MESSAGE", "Message was null", null)
-    }
-    
-    private suspend fun getEncyclopediaData(): Map<String, List<Any>> {
-        val database = EncyclopediaDatabase.getDatabase(this)
-        val repository = EncyclopediaRepository(database.encyclopediaDao())
-        
-        val characters = repository.getAllCharacters().first()
-        val voiceActors = repository.getAllVoiceActors().first()
-        
-        return mapOf(
-            "characters" to characters,
-            "voiceActors" to voiceActors
-        )
-    }
 
 
     /**
@@ -123,36 +90,13 @@ override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
 
         // 初始化并缓存Flutter引擎
-        initFlutterEngine()
+        val flutterEngineManager = FlutterEngineManager(this, flutterEngineId)
+        flutterEngineManager.initAndCacheEngine()
+        flutterEngine = flutterEngineManager.getEngine()
 
-        // 初始化MethodChannel
-        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
-
-        // 设置方法调用处理器
-        channel.setMethodCallHandler { call, result ->
-            when (call.method) {
-                "sendMessage" -> {
-                    // 处理来自Flutter的消息
-                    val message = call.argument<String>("message")
-                    handleFlutterMessage(message, result)
-                }
-                
-                "getEncyclopediaData" -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            val data = getEncyclopediaData()
-                            result.success(data)
-                        } catch (e: Exception) {
-                            result.error("DATA_ERROR", "Failed to get encyclopedia data", e.message)
-                        }
-                    }
-                }
-
-                else -> {
-                    result.notImplemented()
-                }
-            }
-        }
+        // 初始化并设置MethodChannel处理器
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.lovelive.dreamycolor/encyclopedia")
+        ChannelHandler(this, channel).setupMethodCallHandler()
 
 
         setContent {
@@ -210,22 +154,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
         val launchTime = System.currentTimeMillis() - startTime
         Log.d("Performance", "Activity启动耗时: $launchTime ms")
 
-    }
-
-
-    private fun initFlutterEngine() {
-
-        // 创建FlutterEngine实例
-        flutterEngine = FlutterEngine(this)
-
-        // 启动引擎执行Dart代码
-        flutterEngine.dartExecutor.executeDartEntrypoint(DartExecutor.DartEntrypoint.createDefault())
-
-        // 注册插件
-        GeneratedPluginRegistrant.registerWith(flutterEngine)
-
-        // 缓存引擎以便重用
-        FlutterEngineCache.getInstance().put(flutterEngineId, flutterEngine)
     }
 }
 
