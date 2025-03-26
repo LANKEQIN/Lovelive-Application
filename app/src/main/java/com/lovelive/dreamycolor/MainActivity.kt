@@ -287,16 +287,14 @@ fun SplashScreen(
                 )
             }
         }
-
         LaunchedEffect(Unit) {
-            delay(1100L)
+            delay(1000L)
             onTimeout()
         }
     }
 }
 
 
-// 主界面内容
 /**
  * 主界面内容组件
  * 包含底部导航栏和多个子页面的容器，管理页面间的导航和状态
@@ -310,7 +308,7 @@ fun MainContent(settingsManager: SettingsManager) {
             Screen.Exclusive,
             Screen.Inspiration,
             Screen.Encyclopedia,
-            Screen.Profile // 添加 Profile 屏幕
+            Screen.Profile
         )
     }
     // 添加导航状态
@@ -321,7 +319,6 @@ fun MainContent(settingsManager: SettingsManager) {
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(0) }
     // 使用rememberSaveable保持页面状态在配置更改时不丢失
     val pagerState = rememberPagerState(pageCount = { items.size }, initialPage = selectedTabIndex)
-
     // 添加惰性初始化的状态标志
     var encyclopediaInitialized by remember { mutableStateOf(false) }
 
