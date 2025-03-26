@@ -153,7 +153,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
         // 记录启动时间
         val launchTime = System.currentTimeMillis() - startTime
         Log.d("Performance", "Activity启动耗时: $launchTime ms")
-
     }
 }
 
