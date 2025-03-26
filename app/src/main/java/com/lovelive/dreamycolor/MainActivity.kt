@@ -74,7 +74,6 @@ import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugins.GeneratedPluginRegistrant
 import io.flutter.plugin.common.MethodChannel
 import android.util.Log
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.spring
@@ -87,7 +86,6 @@ import kotlin.math.absoluteValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.animation.slideInHorizontally
 
 
 
@@ -384,22 +382,9 @@ fun MainContent(settingsManager: SettingsManager) {
             targetState = currentScreen,
             modifier = Modifier.padding(innerPadding),
             transitionSpec = {
-                // 修改为从右侧滑入动画
-                slideInHorizontally(
-                    initialOffsetX = { it },
-                    animationSpec = tween(
-                        durationMillis = 300,
-                        easing = FastOutSlowInEasing
-                    )
-                ) togetherWith
-                        fadeOut(
-                            animationSpec = tween(
-                                durationMillis = 300,
-                                easing = FastOutSlowInEasing
-                            )
-                        )
+                fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300))
             }
-
         ) { screen ->
             when (screen) {
                 "character_detail" -> CharacterDetailScreen(
@@ -421,7 +406,7 @@ fun MainContent(settingsManager: SettingsManager) {
                         androidx.compose.foundation.pager.HorizontalPager(
                             state = pagerState,
                             modifier = Modifier.fillMaxSize(),
-                            userScrollEnabled = true, // 保留手动滑动功能
+                            userScrollEnabled = true, // 手动滑动
                             pageSpacing = 0.dp,
                             key = { items[it].titleRes }
                         ) { page ->
@@ -433,7 +418,6 @@ fun MainContent(settingsManager: SettingsManager) {
                                         // 计算页面偏移量并应用透明度
                                         val pageOffset =
                                             ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
-
                                         // 创建淡入淡出效果
                                         // 当页面完全可见时透明度为1，滑动过程中逐渐变为0
                                         alpha = 1f - (pageOffset * 0.8f).coerceIn(0f, 1f)
@@ -463,7 +447,6 @@ fun MainContent(settingsManager: SettingsManager) {
                                             }
                                         }
                                     }
-
                                     3 -> ProfileScreen(settingsManager = settingsManager)
                                 }
                             }
@@ -993,7 +976,7 @@ fun CharacterCardUI(
 @Composable
 private fun NameSection(name: String, japaneseName: String, showPinyin: Boolean = false) {
     val height = remember(showPinyin) {
-        if (showPinyin) 55.dp else 50.dp
+        if (showPinyin) 70.dp else 50.dp
     }
 
     val pinyin = remember(name, showPinyin) {
