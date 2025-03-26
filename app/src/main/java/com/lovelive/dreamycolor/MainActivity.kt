@@ -22,6 +22,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -37,7 +46,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModel
@@ -51,6 +59,7 @@ import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
 import com.lovelive.dreamycolor.utils.copyToClipboard
 import com.lovelive.dreamycolor.viewmodel.EncyclopediaViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import com.lovelive.dreamycolor.utils.PinyinUtils
 import androidx.compose.animation.AnimatedContent
@@ -75,7 +84,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.ripple
 import kotlin.math.absoluteValue
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 /**
@@ -102,7 +113,7 @@ data class DialogConfig(
  * 负责初始化主题设置、资源管理和UI界面的构建
  */
 class MainActivity : ComponentActivity() {
-    private val channelName = "com.example.dreamy_color/channel"
+    private val channelName = "com.lovelive.dreamycolor/encyclopedia"
     private lateinit var channel: MethodChannel
 
     private val settingsManager by lazy { SettingsManager(this) }
@@ -116,6 +127,19 @@ class MainActivity : ComponentActivity() {
             Log.d("Flutter Message", "Received message from Flutter: $it")
             result.success("Android received: $it")
         } ?: result.error("INVALID_MESSAGE", "Message was null", null)
+    }
+    
+    private suspend fun getEncyclopediaData(): Map<String, List<Any>> {
+        val database = EncyclopediaDatabase.getDatabase(this)
+        val repository = EncyclopediaRepository(database.encyclopediaDao())
+        
+        val characters = repository.getAllCharacters().first()
+        val voiceActors = repository.getAllVoiceActors().first()
+        
+        return mapOf(
+            "characters" to characters,
+            "voiceActors" to voiceActors
+        )
     }
 
 
@@ -143,6 +167,17 @@ override fun onCreate(savedInstanceState: Bundle?) {
                     // 处理来自Flutter的消息
                     val message = call.argument<String>("message")
                     handleFlutterMessage(message, result)
+                }
+                
+                "getEncyclopediaData" -> {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val data = getEncyclopediaData()
+                            result.success(data)
+                        } catch (e: Exception) {
+                            result.error("DATA_ERROR", "Failed to get encyclopedia data", e.message)
+                        }
+                    }
                 }
 
                 else -> {
