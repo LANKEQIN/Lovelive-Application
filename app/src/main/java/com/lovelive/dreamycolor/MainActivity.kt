@@ -407,6 +407,9 @@ fun MainContent(settingsManager: SettingsManager) {
                                     2 -> {
                                         if (selectedTabIndex == 2 || encyclopediaInitialized) {
                                             key(page) {
+                                                LaunchedEffect(Unit) {
+                                                    delay(2000)
+                                                }
                                                 EncyclopediaScreen(
                                                     // 参数保持不变...
                                                 )
