@@ -4,7 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.os.Bundle
-import android.util.Log // 用于调试
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import com.lovelive.dreamycolor.R
@@ -14,24 +14,26 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs // 导入 abs 用于计算宽高差
 
 class BirthdayWidget : AppWidgetProvider() {
 
-    // 定义最大显示数量
     private val MAX_DISPLAY_COUNT = 4
 
-    // 定义宽度阈值 (dp)，用于决定显示多少个item，需要根据实际效果调整
-    // 这些值表示：
-    // < WIDTH_THRESHOLD_2 dp: 显示 1 个
-    // >= WIDTH_THRESHOLD_2 dp 且 < WIDTH_THRESHOLD_3 dp: 显示 2 个
-    // >= WIDTH_THRESHOLD_3 dp 且 < WIDTH_THRESHOLD_4 dp: 显示 3 个
-    // >= WIDTH_THRESHOLD_4 dp: 显示 4 个
+    // 宽度阈值 (dp) - 用于行布局
     companion object {
-        private const val WIDTH_THRESHOLD_1 = 75 // 显示1个的最小宽度
-        private const val WIDTH_THRESHOLD_2 = 150 // 显示2个的最小宽度
-        private const val WIDTH_THRESHOLD_3 = 220 // 显示3个的最小宽度
-        private const val WIDTH_THRESHOLD_4 = 330 // 显示4个的最小宽度
-        private const val TAG = "BirthdayWidget" // 日志标签
+        private const val WIDTH_THRESHOLD_1 = 75
+        private const val WIDTH_THRESHOLD_2 = 150
+        private const val WIDTH_THRESHOLD_3 = 220
+        private const val WIDTH_THRESHOLD_4 = 330
+        private const val TAG = "BirthdayWidget"
+
+        // 新增：用于判断是否使用网格布局的阈值 (dp)
+        // 当高度大于此值，并且宽度也大于某个值（或宽高比较接近）时，使用网格
+        private const val GRID_MIN_HEIGHT_THRESHOLD_DP = 100 // 示例值，需要调整
+        private const val GRID_MIN_WIDTH_THRESHOLD_DP = 100  // 示例值，需要调整
+        // 或者使用宽高比阈值
+        private const val GRID_ASPECT_RATIO_THRESHOLD = 1.5 // 示例：如果 宽度/高度 < 1.5 且 高度/宽度 < 1.5 (比较接近正方形)
     }
 
     override fun onUpdate(
@@ -45,7 +47,6 @@ class BirthdayWidget : AppWidgetProvider() {
         }
     }
 
-    // 当小组件大小改变时调用
     override fun onAppWidgetOptionsChanged(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -57,103 +58,162 @@ class BirthdayWidget : AppWidgetProvider() {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
     }
 
-    // 提取公共的更新逻辑
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
         Log.d(TAG, "Updating widget ID: $appWidgetId")
-        // 获取小组件选项和宽度
         val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
-        // 获取当前宽度 (横向模式下通常用 MAX_WIDTH，纵向用 MIN_WIDTH，这里我们关心横向拉伸)
-        // 注意：在某些启动器或首次添加时，可能获取不到，给个默认值
-        val currentWidthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0)
-        Log.d(TAG, "Widget ID: $appWidgetId, Current Width (dp): $currentWidthDp")
 
-        // 根据宽度计算要显示的条目数
-        val displayCount = calculateDisplayCount(currentWidthDp)
-        Log.d(TAG, "Widget ID: $appWidgetId, Calculated Display Count: $displayCount")
+        // --- 获取宽度和高度 ---
+        // 横向用 MAX，纵向用 MIN 可能更准，但 resizeMode 允许两者都变，我们都获取
+        // 注意：竖屏时 max 是高度，横屏时 max 是宽度。这里我们假设用户通常在竖屏下调整。
+        // 为了更可靠，我们获取 min/max width/height
+        val minWidthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+        val maxWidthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0)
+        val minHeightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+        val maxHeightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
 
+        // 使用 maxHeight 和 maxWidth 作为当前尺寸的代表（在很多启动器上它们反映了调整后的尺寸）
+        val currentWidthDp = maxWidthDp
+        val currentHeightDp = maxHeightDp
 
-        // 使用布局文件
-        val views = RemoteViews(context.packageName, R.layout.widget_birthday)
+        Log.d(TAG, "Widget ID: $appWidgetId, Dimensions (dp): minW=$minWidthDp, maxW=$maxWidthDp, minH=$minHeightDp, maxH=$maxHeightDp")
 
-        // 从JSON文件读取数据
+        // --- 判断使用哪个布局 ---
+        val useGrid = shouldUseGridLayout(currentWidthDp, currentHeightDp)
+        val layoutId = if (useGrid) {
+            Log.d(TAG, "Widget ID: $appWidgetId, Using GRID layout")
+            R.layout.widget_birthday_grid
+        } else {
+            Log.d(TAG, "Widget ID: $appWidgetId, Using ROW layout")
+            R.layout.widget_birthday
+        }
+
+        // --- 计算显示数量 ---
+        // 对于网格布局，我们总是尝试显示最多4个（如果数据允许）
+        // 对于行布局，我们根据宽度计算
+        val displayCount = if (useGrid) {
+            MAX_DISPLAY_COUNT // 网格布局设计为最多显示4个
+        } else {
+            calculateRowDisplayCount(currentWidthDp) // 行布局根据宽度决定
+        }
+        Log.d(TAG, "Widget ID: $appWidgetId, Calculated Display Count: $displayCount (Grid: $useGrid)")
+
+        // --- 实例化 RemoteViews ---
+        val views = RemoteViews(context.packageName, layoutId) // 使用选择的布局 ID
+
+        // --- 加载和处理数据 (这部分不变) ---
         val characters = loadJsonData(context, "widget_characters.json")
         val voiceActors = loadJsonData(context, "widget_voice_actors.json")
-
-        // 合并数据并找到最近的 N 个生日 (N = displayCount)
         val allData = characters + voiceActors
-        val upcomingBirthdays = findUpcomingBirthdays(allData, displayCount)
+        // 即使是网格布局，我们也只获取实际需要的 displayCount 个数据，或者最多 MAX_DISPLAY_COUNT
+        // findUpcomingBirthdays 现在最多返回 displayCount 个
+        // 如果是网格，我们希望获取最多4个数据来填充
+        val dataFetchCount = if (useGrid) MAX_DISPLAY_COUNT else displayCount
+        val upcomingBirthdays = findUpcomingBirthdays(allData, dataFetchCount)
         Log.d(TAG, "Widget ID: $appWidgetId, Found ${upcomingBirthdays.size} upcoming birthdays to display.")
 
-
-        // 更新UI - 循环最多 MAX_DISPLAY_COUNT 次来设置可见性和数据
-        for (i in 0 until MAX_DISPLAY_COUNT) {
+        // --- 更新UI (循环逻辑基本不变，因为ID相同) ---
+        for (i in 0 until MAX_DISPLAY_COUNT) { // 循环总是检查所有4个可能的槽位
             val itemContainerId = context.resources.getIdentifier("widget_item_${i + 1}", "id", context.packageName)
             val nameId = context.resources.getIdentifier("widget_name_${i + 1}", "id", context.packageName)
             val birthdayId = context.resources.getIdentifier("widget_birthday_${i + 1}", "id", context.packageName)
             val daysLeftId = context.resources.getIdentifier("widget_days_left_${i + 1}", "id", context.packageName)
 
-            // 检查资源ID是否有效（虽然理论上应该总是有效）
             if (itemContainerId == 0 || nameId == 0 || birthdayId == 0 || daysLeftId == 0) {
-                Log.e(TAG, "Resource ID not found for index ${i + 1}")
-                continue // 跳过这个索引
+                Log.e(TAG, "Resource ID not found for index ${i + 1} in layout $layoutId")
+                continue
             }
 
-            if (i < displayCount) {
-                // --- 需要显示这个条目 ---
-                views.setViewVisibility(itemContainerId, View.VISIBLE) // 设置容器可见
-
-                if (i < upcomingBirthdays.size) {
-                    // 如果有足够的数据，填充内容
-                    val (birthdayData, daysLeft) = upcomingBirthdays[i]
-                    val daysLeftString = formatDaysLeft(daysLeft)
-                    val birthdayMonthDay = formatBirthdayMonthDay(birthdayData.birthday)
-
-                    views.setTextViewText(nameId, birthdayData.name)
-                    views.setTextViewText(birthdayId, birthdayMonthDay)
-                    views.setTextViewText(daysLeftId, daysLeftString)
-                    Log.d(TAG, "Widget ID: $appWidgetId, Populating item ${i + 1}: ${birthdayData.name}")
-
-                } else {
-                    // 如果数据不足 (例如只找到1个生日，但需要显示2个)，清空或显示占位符
-                    views.setTextViewText(nameId, "-")
-                    views.setTextViewText(birthdayId, "-")
-                    views.setTextViewText(daysLeftId, "-")
-                    Log.d(TAG, "Widget ID: $appWidgetId, No data for item ${i + 1}, showing placeholders.")
-                }
+            // 决定这个槽位是否应该显示：
+            // 1. 索引 i 必须小于计算出的 displayCount (对于行布局) 或 MAX_DISPLAY_COUNT (对于网格布局，因为我们总是尝试填满)
+            // 2. 并且，必须有对应的数据 (i < upcomingBirthdays.size)
+            val shouldShow = if (useGrid) {
+                i < upcomingBirthdays.size // 网格布局，只要有数据就显示，最多4个
             } else {
-                // --- 不需要显示这个条目 ---
-                views.setViewVisibility(itemContainerId, View.GONE) // 设置容器隐藏
-                Log.d(TAG, "Widget ID: $appWidgetId, Hiding item ${i + 1}")
+                i < displayCount && i < upcomingBirthdays.size // 行布局，受宽度和数据限制
+            }
+
+
+            if (shouldShow) {
+                // --- 显示并填充数据 ---
+                views.setViewVisibility(itemContainerId, View.VISIBLE)
+                val (birthdayData, daysLeft) = upcomingBirthdays[i]
+                val daysLeftString = formatDaysLeft(daysLeft)
+                val birthdayMonthDay = formatBirthdayMonthDay(birthdayData.birthday)
+
+                views.setTextViewText(nameId, birthdayData.name)
+                views.setTextViewText(birthdayId, birthdayMonthDay)
+                views.setTextViewText(daysLeftId, daysLeftString)
+                Log.d(TAG, "Widget ID: $appWidgetId, Populating item ${i + 1}: ${birthdayData.name}")
+
+            } else {
+                // --- 隐藏这个槽位 ---
+                // 不仅要隐藏，最好也清空文本，以防万一旧文本残留
+                views.setViewVisibility(itemContainerId, View.GONE)
+                views.setTextViewText(nameId, "-") // 清空占位
+                views.setTextViewText(birthdayId, "-")
+                views.setTextViewText(daysLeftId, "-")
+                Log.d(TAG, "Widget ID: $appWidgetId, Hiding or clearing item ${i + 1}")
             }
         }
 
         // 更新小组件实例
         try {
             appWidgetManager.updateAppWidget(appWidgetId, views)
-            Log.d(TAG, "Widget ID: $appWidgetId updated successfully.")
+            Log.d(TAG, "Widget ID: $appWidgetId updated successfully with layout ID: $layoutId.")
         } catch (e: Exception) {
             Log.e(TAG, "Error updating widget ID: $appWidgetId", e)
         }
     }
 
-    // 根据宽度计算显示数量
-    private fun calculateDisplayCount(widthDp: Int): Int {
+    // 新增：判断是否使用网格布局的函数
+    private fun shouldUseGridLayout(widthDp: Int, heightDp: Int): Boolean {
+        if (widthDp == 0 || heightDp == 0) {
+            // 尺寸未知时，默认使用行布局
+            return false
+        }
+
+        // --- 策略1：基于绝对阈值 ---
+        // return heightDp >= GRID_MIN_HEIGHT_THRESHOLD_DP && widthDp >= GRID_MIN_WIDTH_THRESHOLD_DP
+
+        // --- 策略2：基于宽高比 ---
+        // 避免除以零
+        val aspectRatioWidthToHeight = widthDp.toFloat() / heightDp.toFloat()
+        val aspectRatioHeightToWidth = heightDp.toFloat() / widthDp.toFloat()
+
+        // 如果宽度和高度都比较接近（例如，比值小于1.5），则认为是方形，使用网格
+        val isNearSquare = aspectRatioWidthToHeight < GRID_ASPECT_RATIO_THRESHOLD &&
+                aspectRatioHeightToWidth < GRID_ASPECT_RATIO_THRESHOLD
+
+        // 同时，可能需要一个最小尺寸要求，避免在非常小的方形时也用网格
+        val meetsMinSize = heightDp >= GRID_MIN_HEIGHT_THRESHOLD_DP && widthDp >= GRID_MIN_WIDTH_THRESHOLD_DP
+
+        // return isNearSquare // 只基于比例
+        return isNearSquare && meetsMinSize // 基于比例和最小尺寸
+
+        // --- 策略3：更简单，高度优先 ---
+        // 如果高度足够大，就倾向于用网格，除非宽度特别小
+        // return heightDp >= GRID_MIN_HEIGHT_THRESHOLD_DP && widthDp >= WIDTH_THRESHOLD_2 // 高度够，且宽度至少能放下2个时用网格
+    }
+
+
+    // 重命名旧的函数以明确其用于行布局
+    private fun calculateRowDisplayCount(widthDp: Int): Int {
         return when {
-            widthDp == 0 -> 3 // 如果宽度未知，默认显示3个 (或根据minWidth调整)
+            widthDp == 0 -> 3 // 宽度未知默认值
             widthDp < WIDTH_THRESHOLD_2 -> 1
             widthDp < WIDTH_THRESHOLD_3 -> 2
             widthDp < WIDTH_THRESHOLD_4 -> 3
-            else -> MAX_DISPLAY_COUNT // >= WIDTH_THRESHOLD_4 显示最多4个
+            else -> MAX_DISPLAY_COUNT
         }
     }
 
 
     // --- loadJsonData, findUpcomingBirthdays, calculateNextBirthdayMillis, formatDaysLeft, formatBirthdayMonthDay, BirthdayData 保持不变 ---
-    // ... (省略你原来的这些函数，它们不需要修改)
+    // ... (这些函数无需修改)
     private fun loadJsonData(context: Context, fileName: String): List<BirthdayData> {
         return try {
             val inputStream: InputStream = context.assets.open(fileName)
