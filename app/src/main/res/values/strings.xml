@@ -10,5 +10,6 @@
     <string name="theme_dark">深色模式</string>
     <string name="birthday">生日</string>
     <string name="height">身高</string>
+    <string name="widget_description">生日倒计时小组件</string>
 
 </resources>
