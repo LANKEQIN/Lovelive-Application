@@ -338,6 +338,10 @@ fun MainContent(settingsManager: SettingsManager) {
                                                     onCharacterClick = { name ->
                                                         characterName = name
                                                         currentScreen = "character_detail"
+                                                    },
+                                                    onVoiceActorClick = { name ->
+                                                        voiceActorName = name
+                                                        currentScreen = "voice_actor_detail"
                                                     }
                                                 )
                                             }
