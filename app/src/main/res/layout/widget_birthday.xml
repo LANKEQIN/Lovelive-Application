@@ -5,7 +5,7 @@
     android:orientation="horizontal"
     android:padding="10dp"
     android:baselineAligned="false"
-    android:background="@drawable/widget_background"><!-- 使用一个Drawable来实现圆角和背景色 -->
+    android:background="@drawable/widget_adaptive_background">
 
     <!-- 你可以在这里加一个标题，如果需要的话 -->
     <!-- <TextView
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#E0E0E0"
+                android:textColor="@color/widget_text_primary"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -48,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="11sp"
-                android:textColor="#B0B0B0"
+                android:textColor="@color/widget_text_secondary"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
 
@@ -57,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/widget_text_secondary"
                 android:textStyle="bold"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
@@ -79,7 +79,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#E0E0E0"
+                android:textColor="@color/widget_text_primary"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -90,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="11sp"
-                android:textColor="#B0B0B0"
+                android:textColor="@color/widget_text_secondary"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
 
@@ -99,7 +99,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/widget_text_secondary"
                 android:textStyle="bold"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
@@ -121,7 +121,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#E0E0E0"
+                android:textColor="@color/widget_text_primary"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -132,7 +132,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="11sp"
-                android:textColor="#B0B0B0"
+                android:textColor="@color/widget_text_secondary"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
 
@@ -141,7 +141,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/widget_text_secondary"
                 android:textStyle="bold"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
@@ -163,7 +163,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#E0E0E0"
+                android:textColor="@color/widget_text_primary"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -173,7 +173,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="11sp"
-                android:textColor="#B0B0B0"
+                android:textColor="@color/widget_text_secondary"
                 android:layout_marginTop="2dp"
                 android:text="-"/>
             <TextView
@@ -181,7 +181,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/widget_text_secondary"
                 android:textStyle="bold"
                 android:layout_marginTop="2dp"
                 android:text="-"/>

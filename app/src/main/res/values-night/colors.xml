@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式下的文本颜色 -->
+    <color name="widget_text_primary">#FFFFFFFF</color> <!-- 100% White -->
+    <color name="widget_text_secondary">#B3FFFFFF</color> <!-- 70% White -->
+</resources>
