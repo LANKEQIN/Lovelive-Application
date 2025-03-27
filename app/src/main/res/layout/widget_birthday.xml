@@ -2,9 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp"
-    android:background="@drawable/widget_background"> <!-- 使用一个Drawable来实现圆角和背景色 -->
+    android:orientation="horizontal"
+    android:padding="10dp"
+    android:baselineAligned="false"
+    android:background="@drawable/widget_background"><!-- 使用一个Drawable来实现圆角和背景色 -->
 
     <!-- 你可以在这里加一个标题，如果需要的话 -->
     <!-- <TextView
@@ -22,12 +23,14 @@
 
         <!-- 第一个生日信息 -->
         <LinearLayout
+            android:id="@+id/widget_item_1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="4dp">
+            android:padding="4dp"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/widget_name_1"
@@ -62,12 +65,14 @@
 
         <!-- 第二个生日信息 -->
         <LinearLayout
+            android:id="@+id/widget_item_2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="4dp">
+            android:padding="4dp"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/widget_name_2"
@@ -102,12 +107,14 @@
 
         <!-- 第三个生日信息 -->
         <LinearLayout
+            android:id="@+id/widget_item_3"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="4dp">
+            android:padding="4dp"
+            android:visibility="gone">
 
             <TextView
                 android:id="@+id/widget_name_3"
@@ -131,6 +138,46 @@
 
             <TextView
                 android:id="@+id/widget_days_left_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp"
+                android:text="-"/>
+        </LinearLayout>
+
+        <!-- 第四个生日信息 -->
+        <LinearLayout
+            android:id="@+id/widget_item_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="4dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/widget_name_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#E0E0E0"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:text="-"/>
+            <TextView
+                android:id="@+id/widget_birthday_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="11sp"
+                android:textColor="#B0B0B0"
+                android:layout_marginTop="2dp"
+                android:text="-"/>
+            <TextView
+                android:id="@+id/widget_days_left_4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
