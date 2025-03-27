@@ -98,6 +98,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.viewmodel.compose)
     implementation(libs.androidx.datastore)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.compose.animation)
