@@ -22,7 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.pm.PackageInfoCompat
-import io.flutter.embedding.android.FlutterActivity
 
 
 
@@ -80,43 +79,6 @@ fun ProfileScreen(settingsManager: SettingsManager) {
                 versionName = getVersionNameAndCode(context),
                 onSecretActivated = { showDisclaimer = true }
             )
-
-            // 新增：Flutter调试按钮
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        // 启动Flutter页面
-                        context.startActivity(
-                            FlutterActivity.createDefaultIntent(context)
-                        )
-                    },
-                shape = MaterialTheme.shapes.medium,
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 4.dp
-                )
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        text = "启动Flutter调试页面",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    )
-                }
-            }
-
-
 
             // 文字大小设置
             TextSizeSettingCard(

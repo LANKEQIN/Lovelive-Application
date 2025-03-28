@@ -39,8 +39,6 @@ import com.lovelive.dreamycolor.ui.theme.DreamyColorTheme
 import kotlinx.coroutines.delay
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
-import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodChannel
 import android.util.Log
 import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.absoluteValue
@@ -74,10 +72,6 @@ data class DialogConfig(
 class MainActivity : ComponentActivity() {
     private val settingsManager by lazy { SettingsManager(this) }
 
-    private val flutterEngineId = "dreamycolor_flutter_engine"
-    private lateinit var flutterEngine: FlutterEngine
-
-
     /**
  * Activity创建时的回调方法
  * 初始化主题设置、启用边缘到边缘显示，并设置主界面内容
@@ -88,16 +82,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // 初始化并缓存Flutter引擎
-        val flutterEngineManager = FlutterEngineManager(this, flutterEngineId)
-        flutterEngineManager.initAndCacheEngine()
-        flutterEngine = flutterEngineManager.getEngine()
-
-        // 初始化并设置MethodChannel处理器
-        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.lovelive.dreamycolor/encyclopedia")
-        ChannelHandler(this, channel).setupMethodCallHandler()
-
 
         setContent {
             val themeMode by settingsManager.themeModeFlow.collectAsState(

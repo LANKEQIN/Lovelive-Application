@@ -30,8 +30,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Dreamy Color"
 include(":app")
-
-// Flutter module integration
-apply {
-    from("${rootProject.projectDir}/flutter_module/.android/include_flutter.groovy")
-}
