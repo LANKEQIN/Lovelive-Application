@@ -1,5 +1,6 @@
 package com.lovelive.dreamycolor.widget
 
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
@@ -14,15 +15,13 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-import kotlin.math.abs // 导入 abs 用于计算宽高差
 
 class BirthdayWidget : AppWidgetProvider() {
 
-    private val MAX_DISPLAY_COUNT = 4
+    private val maxDisplayCount = 4
 
     // 宽度阈值 (dp) - 用于行布局
     companion object {
-        private const val WIDTH_THRESHOLD_1 = 75
         private const val WIDTH_THRESHOLD_2 = 150
         private const val WIDTH_THRESHOLD_3 = 220
         private const val WIDTH_THRESHOLD_4 = 330
@@ -58,6 +57,7 @@ class BirthdayWidget : AppWidgetProvider() {
         super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions)
     }
 
+    @SuppressLint("DiscouragedApi")
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -95,7 +95,7 @@ class BirthdayWidget : AppWidgetProvider() {
         // 对于网格布局，我们总是尝试显示最多4个（如果数据允许）
         // 对于行布局，我们根据宽度计算
         val displayCount = if (useGrid) {
-            MAX_DISPLAY_COUNT // 网格布局设计为最多显示4个
+            maxDisplayCount // 网格布局设计为最多显示4个
         } else {
             calculateRowDisplayCount(currentWidthDp) // 行布局根据宽度决定
         }
@@ -111,12 +111,12 @@ class BirthdayWidget : AppWidgetProvider() {
         // 即使是网格布局，我们也只获取实际需要的 displayCount 个数据，或者最多 MAX_DISPLAY_COUNT
         // findUpcomingBirthdays 现在最多返回 displayCount 个
         // 如果是网格，我们希望获取最多4个数据来填充
-        val dataFetchCount = if (useGrid) MAX_DISPLAY_COUNT else displayCount
+        val dataFetchCount = if (useGrid) maxDisplayCount else displayCount
         val upcomingBirthdays = findUpcomingBirthdays(allData, dataFetchCount)
         Log.d(TAG, "Widget ID: $appWidgetId, Found ${upcomingBirthdays.size} upcoming birthdays to display.")
 
         // --- 更新UI (循环逻辑基本不变，因为ID相同) ---
-        for (i in 0 until MAX_DISPLAY_COUNT) { // 循环总是检查所有4个可能的槽位
+        for (i in 0 until maxDisplayCount) { // 循环总是检查所有4个可能的槽位
             val itemContainerId = context.resources.getIdentifier("widget_item_${i + 1}", "id", context.packageName)
             val nameId = context.resources.getIdentifier("widget_name_${i + 1}", "id", context.packageName)
             val birthdayId = context.resources.getIdentifier("widget_birthday_${i + 1}", "id", context.packageName)
@@ -207,7 +207,7 @@ class BirthdayWidget : AppWidgetProvider() {
             widthDp < WIDTH_THRESHOLD_2 -> 1
             widthDp < WIDTH_THRESHOLD_3 -> 2
             widthDp < WIDTH_THRESHOLD_4 -> 3
-            else -> MAX_DISPLAY_COUNT
+            else -> maxDisplayCount
         }
     }
 
@@ -289,12 +289,13 @@ class BirthdayWidget : AppWidgetProvider() {
                 // 尝试解析完整日期
                 fullDateFormat.parse(birthdayString)
             } catch (e: ParseException) {
+                Log.w(TAG, "Failed to parse birthday string: $birthdayString", e)
+                return null
                 // 如果失败，尝试解析 月.日
                 try {
                     monthDayFormat.parse(birthdayString)
-                } catch (e2: ParseException) {
+                } catch (_: ParseException) {
                     // 两种格式都失败，返回 null
-                    Log.w(TAG, "Failed to parse birthday string: $birthdayString")
                     return null
                 }
             } ?: return null // 如果 date 为 null (解析失败)
@@ -354,10 +355,11 @@ class BirthdayWidget : AppWidgetProvider() {
         return try {
             val date = try {
                 fullDateFormat.parse(birthdayString)
-            } catch (e: ParseException) {
+            } catch (_: ParseException)
+            {
                 try {
                     monthDayFormat.parse(birthdayString)
-                } catch (e2: ParseException) {
+                } catch (_: ParseException) {
                     // 如果两种格式都失败，返回原始字符串
                     Log.w(TAG, "Could not format birthday to MM.dd: $birthdayString")
                     return birthdayString
