@@ -348,8 +348,3 @@ fun MainContent(settingsManager: SettingsManager) {
     }
 }
 
-
-// Website数据类和相关函数已迁移到InspirationScreen.kt
-// InspirationScreen已迁移到InspirationScreen.kt文件中
-// 相关子屏幕已迁移到InspirationScreen.kt文件中
-// EncyclopediaScreen已迁移到EncyclopediaScreen.kt文件中
