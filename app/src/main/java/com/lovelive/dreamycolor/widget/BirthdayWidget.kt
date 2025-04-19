@@ -1,9 +1,14 @@
 package com.lovelive.dreamycolor.widget
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -25,11 +30,86 @@ class BirthdayWidget : AppWidgetProvider() {
         private const val WIDTH_THRESHOLD_3 = 220
         private const val WIDTH_THRESHOLD_4 = 330
         private const val TAG = "BirthdayWidget"
+        private const val ACTION_AUTO_UPDATE = "com.lovelive.dreamycolor.widget.action.AUTO_UPDATE"
 
         // 用于判断是否使用网格布局的阈值 (dp)
         private const val GRID_MIN_HEIGHT_THRESHOLD_DP = 100
         private const val GRID_MIN_WIDTH_THRESHOLD_DP = 100
         private const val GRID_ASPECT_RATIO_THRESHOLD = 1.5
+
+        // 安排下一次更新
+        fun scheduleNextUpdate(context: Context) { // Make it public within companion object
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(context, BirthdayWidget::class.java).apply {
+                action = ACTION_AUTO_UPDATE
+            }
+
+            val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            } else {
+                PendingIntent.FLAG_UPDATE_CURRENT
+            }
+            val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, pendingIntentFlags)
+
+            // 设置下一次更新时间为明天凌晨 00:01
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 1) // 稍微错开整点，避免系统拥堵
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+                add(Calendar.DAY_OF_YEAR, 1) // 设置为明天
+            }
+
+            // 使用 setInexactRepeating 允许系统优化，更省电，但时间可能不精确
+            // 如果需要精确时间，考虑 setExact 或 setAlarmClock，但需处理权限和耗电
+            // 对于生日提醒，每天更新一次即可，setInexactRepeating 通常足够
+            try {
+                // 取消之前的闹钟，以防重复设置
+                alarmManager.cancel(pendingIntent)
+                // 设置重复闹钟，间隔一天
+                alarmManager.setInexactRepeating(
+                    AlarmManager.RTC,
+                    calendar.timeInMillis,
+                    AlarmManager.INTERVAL_DAY,
+                    pendingIntent
+                )
+                Log.d(TAG, "Scheduled next update for: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(calendar.time)}")
+            } catch (e: SecurityException) {
+                Log.e(TAG, "SecurityException: Check for SCHEDULE_EXACT_ALARM or USE_EXACT_ALARM permission if needed.", e)
+                // 根据 Android 版本和需求，可能需要引导用户授予权限
+            }
+        }
+
+        // 辅助函数，用于手动触发更新（例如，从配置活动）
+        fun manualUpdate(context: Context) {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val componentName = ComponentName(context, BirthdayWidget::class.java)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
+            if (appWidgetIds.isNotEmpty()) {
+                val intent = Intent(context, BirthdayWidget::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
+                }
+                context.sendBroadcast(intent)
+                Log.d(TAG, "Manual update triggered for widget IDs: ${appWidgetIds.joinToString()}")
+            }
+        }
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        // 响应自定义的更新 Action
+        if (ACTION_AUTO_UPDATE == intent.action) {
+            Log.d(TAG, "Received auto update intent")
+            // 获取所有此 provider 的 widget IDs
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val componentName = ComponentName(context, BirthdayWidget::class.java)
+            val appWidgetIds = appWidgetManager.getAppWidgetIds(componentName)
+            if (appWidgetIds.isNotEmpty()) {
+                onUpdate(context, appWidgetManager, appWidgetIds)
+            }
+        }
     }
 
     override fun onUpdate(
@@ -37,7 +117,9 @@ class BirthdayWidget : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        Log.d(TAG, "onUpdate called")
+        Log.d(TAG, "onUpdate called for widget IDs: ${appWidgetIds.joinToString()}")
+        // 在每次更新时重新安排下一次自动更新
+        scheduleNextUpdate(context)
         appWidgetIds.forEach { appWidgetId ->
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
@@ -83,7 +165,7 @@ class BirthdayWidget : AppWidgetProvider() {
         }
 
         val displayCount = if (useGrid) {
-            maxDisplayCount
+            this.maxDisplayCount
         } else {
             calculateRowDisplayCount(currentWidthDp)
         }
@@ -347,4 +429,32 @@ class BirthdayWidget : AppWidgetProvider() {
         val name: String,
         val birthday: String // 存储原始生日字符串
     )
-}
+
+    // 当最后一个小组件被删除时，取消闹钟
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, BirthdayWidget::class.java).apply {
+            action = ACTION_AUTO_UPDATE
+        }
+        val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        } else {
+            PendingIntent.FLAG_NO_CREATE
+        }
+        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, pendingIntentFlags)
+
+        if (pendingIntent != null) {
+            alarmManager.cancel(pendingIntent)
+            Log.d(TAG, "Cancelled scheduled updates as the last widget was disabled.")
+        }
+    }
+
+    // 当第一个小组件被添加时，立即安排更新
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        Log.d(TAG, "First widget enabled, scheduling initial update.")
+        scheduleNextUpdate(context)
+       }
+    }
+

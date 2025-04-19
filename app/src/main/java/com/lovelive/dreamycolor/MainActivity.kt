@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.absoluteValue
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import kotlinx.coroutines.launch
 
 
 /**
@@ -200,14 +201,14 @@ fun MainContent(settingsManager: SettingsManager) {
     val pagerState = rememberPagerState(pageCount = { items.size }, initialPage = selectedTabIndex)
     // 添加惰性初始化的状态标志
     var encyclopediaInitialized by remember { mutableStateOf(false) }
+    // 获取协程作用域以调用挂起函数
+    val scope = rememberCoroutineScope()
 
 
 
-
-    // 确保pagerState和selectedTabIndex保持同步
     LaunchedEffect(selectedTabIndex) {
         if (pagerState.currentPage != selectedTabIndex) {
-            pagerState.animateScrollToPage(selectedTabIndex)
+            pagerState.scrollToPage(selectedTabIndex)
         }
     }
     LaunchedEffect(pagerState.currentPage) {
@@ -245,7 +246,12 @@ fun MainContent(settingsManager: SettingsManager) {
                             },
                             selected = selectedTabIndex == index,
                             onClick = {
-                                selectedTabIndex = index
+                                scope.launch {
+                                    pagerState.animateScrollToPage(
+                                        page = index,
+                                        animationSpec = tween(durationMillis = 700)
+                                    )
+                                }
                             }
                         )
                     }
@@ -300,13 +306,13 @@ fun MainContent(settingsManager: SettingsManager) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .graphicsLayer {
+                                    .graphicsLayer { // 应用 graphicsLayer
                                         // 计算页面偏移量并应用透明度
-                                        val pageOffset =
-                                            ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
+                                        val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue
                                         // 创建淡入淡出效果
                                         // 当页面完全可见时透明度为1，滑动过程中逐渐变为0
-                                        alpha = 1f - (pageOffset * 0.8f).coerceIn(0f, 1f)
+                                        // 调整插值以获得更平滑的淡出效果
+                                        alpha = (1f - pageOffset).coerceIn(0f, 1f)
                                     }
                             ) {
                                 when (page) {
@@ -315,9 +321,10 @@ fun MainContent(settingsManager: SettingsManager) {
                                     2 -> {
                                         if (selectedTabIndex == 2 || encyclopediaInitialized) {
                                             key(page) {
-                                                LaunchedEffect(Unit) {
-                                                    delay(2000)
-                                                }
+                                                // 移除可能导致卡顿的延迟
+                                                // LaunchedEffect(Unit) {
+                                                //     delay(2000)
+                                                // }
                                                 EncyclopediaScreen(
                                                     onCharacterClick = { name ->
                                                         characterName = name
