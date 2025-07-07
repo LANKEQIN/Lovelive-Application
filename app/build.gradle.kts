@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId = "com.lovelive.dreamycolor"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 36
         versionCode = generateVersionCode(2025, 7, 7)
         versionName = "0.1"
