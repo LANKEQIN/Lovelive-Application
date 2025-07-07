@@ -2,7 +2,6 @@ package com.lovelive.dreamycolor
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -22,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.lovelive.dreamycolor.model.Website
+import androidx.core.net.toUri
 
 /**
  * 灵感屏幕，包含各种Love Live相关网站和内部功能入口
@@ -377,6 +377,6 @@ private fun WebsiteGrid(
  * 在浏览器中打开URL的扩展函数
  */
 fun Context.openInBrowser(url: String) {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
     startActivity(intent)
 }

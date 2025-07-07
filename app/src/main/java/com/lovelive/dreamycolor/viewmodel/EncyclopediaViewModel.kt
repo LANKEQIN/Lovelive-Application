@@ -13,7 +13,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 class EncyclopediaViewModel(
     application: Application,
@@ -28,7 +34,16 @@ class EncyclopediaViewModel(
     }
 
     private val _dataState = MutableStateFlow<DataState>(DataState.Initial)
-    val dataState: StateFlow<DataState> = _dataState
+    val dataState: StateFlow<DataState> = _dataState.asStateFlow()
+    
+    // 初始化任务的Job引用，用于取消
+    private var initJob: Job? = null
+    
+    // 是否已经初始化完成
+    private var isInitialized = false
+    
+    // 延迟加载配置
+    private val lazyLoadDelay = 500L // 延迟加载时间（毫秒）
 
     val allCharacters: Flow<List<CharacterCard>> = repository.getAllCharacters()
         .catch { e ->
@@ -44,14 +59,30 @@ class EncyclopediaViewModel(
 
     init {
         Log.d("ViewModel", "ViewModel初始化")
-        initializeData(getApplication())
+        // 使用延迟初始化，减轻应用启动负担
+        viewModelScope.launch {
+            delay(lazyLoadDelay) // 延迟一段时间再初始化
+            initializeData(getApplication())
+        }
     }
 
     private fun initializeData(context: Context) {
-        viewModelScope.launch {
+        // 如果已经初始化过，则不再重复初始化
+        if (isInitialized) return
+        
+        // 取消之前的初始化任务（如果有）
+        initJob?.cancel()
+        
+        initJob = viewModelScope.launch(SupervisorJob() + Dispatchers.IO) {
             try {
                 _dataState.value = DataState.Loading
-                repository.initializeFromAssets(context)
+                
+                // 在IO线程中执行耗时的初始化操作
+                withContext(Dispatchers.IO) {
+                    repository.initializeFromAssets(context)
+                }
+                
+                isInitialized = true
                 _dataState.value = DataState.Success
                 Log.d("ViewModel", "数据初始化成功")
             } catch (e: Exception) {
@@ -63,10 +94,19 @@ class EncyclopediaViewModel(
 
 
     fun refreshData(context: Context) {
-        viewModelScope.launch {
+        // 取消之前的初始化任务（如果有）
+        initJob?.cancel()
+        
+        initJob = viewModelScope.launch {
             try {
                 _dataState.value = DataState.Loading
-                repository.refreshData(context)
+                
+                // 在IO线程中执行耗时的刷新操作
+                withContext(Dispatchers.IO) {
+                    repository.refreshData(context)
+                }
+                
+                isInitialized = true
                 _dataState.value = DataState.Success
                 Log.d("ViewModel", "数据刷新成功")
             } catch (e: Exception) {
@@ -84,18 +124,38 @@ class EncyclopediaViewModel(
             }
     }
 
-    // 新增：根据团体名称分组角色
+    // 优化：使用缓存机制减少重复计算
+    private val _charactersByGroup = MutableStateFlow<Map<String, List<CharacterCard>>>(emptyMap())
+    private val _voiceActorsByGroup = MutableStateFlow<Map<String, List<VoiceActorCard>>>(emptyMap())
+
+    // 新增：根据团体名称分组角色 - 优化版本
     fun getCharactersByGroup(): Flow<Map<String, List<CharacterCard>>> {
-        return allCharacters.map { characters ->
-            characters.groupBy { getCharacterGroupName(it) }
+        // 如果缓存为空，则进行一次计算
+        if (_charactersByGroup.value.isEmpty()) {
+            viewModelScope.launch(Dispatchers.Default) { // 使用Default调度器进行计算密集型操作
+                allCharacters.collect { characters ->
+                    // 在计算线程中执行分组操作
+                    val groupedCharacters = characters.groupBy { getCharacterGroupName(it) }
+                    _charactersByGroup.value = groupedCharacters
+                }
+            }
         }
+        return _charactersByGroup
     }
 
-    // 新增：根据团体名称分组声优
+    // 新增：根据团体名称分组声优 - 优化版本
     fun getVoiceActorsByGroup(): Flow<Map<String, List<VoiceActorCard>>> {
-        return allVoiceActors.map { voiceActors ->
-            voiceActors.groupBy { getVoiceActorGroupName(it) }
+        // 如果缓存为空，则进行一次计算
+        if (_voiceActorsByGroup.value.isEmpty()) {
+            viewModelScope.launch(Dispatchers.Default) { // 使用Default调度器进行计算密集型操作
+                allVoiceActors.collect { voiceActors ->
+                    // 在计算线程中执行分组操作
+                    val groupedVoiceActors = voiceActors.groupBy { getVoiceActorGroupName(it) }
+                    _voiceActorsByGroup.value = groupedVoiceActors
+                }
+            }
         }
+        return _voiceActorsByGroup
     }
 
     // 新增：根据角色获取所属团体名称
@@ -122,8 +182,37 @@ class EncyclopediaViewModel(
         }
     }
 
+    /**
+     * 强制立即初始化数据
+     * 在需要立即获取数据的场景使用
+     */
+    fun forceInitialize(context: Context) {
+        // 取消延迟初始化
+        initJob?.cancel()
+        
+        // 立即初始化
+        initializeData(context)
+    }
+    
+    /**
+     * 预加载特定角色的数据
+     * 在用户可能即将访问特定角色详情时调用
+     */
+    fun preloadCharacter(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.getCharacter(name).collect { /* 仅触发加载，不处理结果 */ }
+                Log.d("ViewModel", "预加载角色 $name 数据成功")
+            } catch (e: Exception) {
+                Log.e("ViewModel", "预加载角色数据失败: ${e.message}")
+            }
+        }
+    }
+    
     override fun onCleared() {
         super.onCleared()
+        // 取消所有正在进行的任务
+        initJob?.cancel()
         Log.d("ViewModel", "ViewModel已清理")
     }
 }

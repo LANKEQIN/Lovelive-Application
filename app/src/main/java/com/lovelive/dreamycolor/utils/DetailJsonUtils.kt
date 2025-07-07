@@ -4,7 +4,6 @@ import android.content.Context
 import com.lovelive.dreamycolor.model.CharacterDetail
 import com.lovelive.dreamycolor.model.VoiceActorDetail
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 import java.io.IOException
 import android.util.Log
 

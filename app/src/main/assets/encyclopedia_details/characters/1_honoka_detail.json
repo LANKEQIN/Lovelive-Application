@@ -1,10 +1,16 @@
 {
   "characterName": "高坂穗乃果",
+  "japaneseName": "高坂 穂乃果",
+  "romanizedName": "Kōsaka Honoka",
   "basicInfo": {
+    "age": 16,
+    "school": "音乃木坂学院",
+    "height": 157,
     "cvName": "新田惠海",
     "group": "μ's",
     "attribute": "元气",
-    "themeColor": "#F38500"
+    "themeColor": "#F38500",
+    "bio": "音乃木坂学院二年级学生，性格开朗、精力充沛，μ's的发起人和中心。为了拯救即将废校的音乃木坂学院，而成立了校内偶像团体μ's。"
   },
   "advancedInfo": {
     "relationships": [
@@ -14,10 +20,19 @@
         "description": "从小一起长大的挚友"
       },
       {
-        "target": "园田海未",
-        "type": "队友",
-        "description": "共同创立校园偶像的伙伴"
+        "target": "高坂雪穗",
+        "type": "家人",
+        "description": "是高坂穗乃果的最疼爱的妹妹"
+      },
+      {
+        "target": "高海千歌",
+        "type": "？？",
+        "description": "千歌视穗乃果为自己的偶像和灵感来源"
       }
     ]
-  }
+  },
+  "footnotes": [
+    "《Love Live! School idol project》官方设定集",
+    "萌娘百科（https://mzh.moegirl.org.cn/高坂穗乃果）"
+  ]
 }

@@ -7,4 +7,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="widget_text_primary">#DE000000</color> <!-- 87% Black -->
+    <color name="widget_text_secondary">#8A000000</color> <!-- 54% Black -->
 </resources>

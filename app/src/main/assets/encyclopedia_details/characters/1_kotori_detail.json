@@ -1,23 +1,38 @@
 {
   "characterName": "南小鸟",
+  "japaneseName": "南 ことり",
+  "romanizedName": "Minami Kotori",
   "basicInfo": {
+    "age": 16,
+    "school": "音乃木坂学院",
+    "height": 159,
     "cvName": "内田彩",
     "group": "μ's",
     "attribute": "温柔",
-    "themeColor": "#FFD700"
+    "themeColor": "#FFD700",
+    "bio": "音乃木坂学院二年级学生，μ's初期成员兼服装设计师。性格温柔体贴，擅长裁缝与舞蹈。与穗乃果、海未是从小一起长大的青梅竹马三人组。"
   },
   "advancedInfo": {
     "relationships": [
       {
         "target": "高坂穗乃果",
         "type": "青梅竹马",
-        "description": "从小一起长大的挚友"
+        "description": "从小一起长大的挚友兼精神支柱"
       },
       {
         "target": "园田海未",
-        "type": "队友",
-        "description": "共同创立校园偶像的伙伴"
+        "type": "青梅竹马",
+        "description": "共同成长的发小兼团队核心成员"
+      },
+      {
+        "target": "南理事长",
+        "type": "家人",
+        "description": "母亲是音乃木坂学院理事长"
       }
     ]
-  }
+  },
+  "footnotes": [
+    "《Love Live! School idol project》动画官方设定",
+    "萌娘百科（https://mzh.moegirl.org.cn/南小鸟）"
+  ]
 }

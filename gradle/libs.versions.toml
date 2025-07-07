@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.0"
+agp = "8.8.2"
 kotlin = "2.1.10"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -8,12 +8,13 @@ espressoCore = "3.6.1"
 kotlinxSerializationJson = "1.6.3"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
-composeBom = "2025.02.00"
+composeBom = "2025.03.01"
 compose = "1.7.8"
-navigation-compose = "2.8.8"
-datastore = "1.1.3"
-datastore-preferences = "1.1.3"
+navigation-compose = "2.8.9"
+datastore = "1.1.4"
+datastore-preferences = "1.1.4"
 room = "2.6.1"
+androidxRoomVersion = "2.6.1"
 androidx-viewpager2 = "1.1.0"
 gson = "2.12.1"
 paging = "3.3.6"
@@ -23,6 +24,8 @@ compose-foundation = "1.7.8"
 material3 = "1.3.1"
 kuromoji = "0.9.0"
 pinyin4j = "2.5.1"
+glance-appwidget = "1.1.1"
+androidx-work = "2.10.0"
 
 [libraries]
 # ──────────────── 基础依赖 ────────────────
@@ -30,6 +33,8 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 kuromoji-ipadic = { module = "com.atilika.kuromoji:kuromoji-ipadic", version.ref = "kuromoji" }
 pinyin4j = { module = "com.belerweb:pinyin4j", version.ref = "pinyin4j" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance-appwidget" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidx-work" }
 
 #──────────────── 测试相关 ────────────────
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -42,7 +47,6 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation-compose" }
-androidx-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose"  }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "compose-foundation" }
 
@@ -75,4 +79,5 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version = "2.1.10-1.0.30" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.1.10" }
+android-room = { id = "androidx.room", version.ref = "androidxRoomVersion" }
 
