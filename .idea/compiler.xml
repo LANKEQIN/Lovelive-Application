@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="23">
-      <module name="Dreamy_Color.app" target="21" />
+    <bytecodeTargetLevel target="21">
       <module name="Dreamy_Color.flutter" target="21" />
       <module name="gradle" target="21" />
       <module name="gradle.main" target="11" />

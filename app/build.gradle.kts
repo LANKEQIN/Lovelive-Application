@@ -14,12 +14,12 @@ fun generateVersionCode(year: Int, month: Int, day: Int): Int {
 
 android {
     namespace = "com.lovelive.dreamycolor"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.lovelive.dreamycolor"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = generateVersionCode(2025, 4, 19)
         versionName = "0.1"
 
