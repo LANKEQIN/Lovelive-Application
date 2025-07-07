@@ -1,0 +1,119 @@
+Index: README.md
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>这句话是为了证明亲爱的作者以及伟大的项目库仍然活着————写于2025.04.19，桂林\r\n\r\n什么时代黑利都让我吃透了，我的精神状态支撑不下去了————写于2025.06.09，桂林\r\n\r\n作者要去准备考研了————写于2025.06.27，南宁\r\n\r\n此项目是个人为了兴趣而开发, 仅供学习交流使用, 无任何商业用途.\r\n资源版权仍归原网站或其作者所有.\r\n所用 API 皆从官方网站收集, 不含任何非法及破解内容.\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/README.md b/README.md
+--- a/README.md	(revision e6abcd3e1fa63735682bfc7a79c080483a82e142)
++++ b/README.md	(date 1751871804725)
+@@ -1,8 +1,4 @@
+-这句话是为了证明亲爱的作者以及伟大的项目库仍然活着————写于2025.04.19，桂林
+-
+-什么时代黑利都让我吃透了，我的精神状态支撑不下去了————写于2025.06.09，桂林
+-
+-作者要去准备考研了————写于2025.06.27，南宁
++作者要去备考考研了————写于2025.07.07，南宁
+ 
+ 此项目是个人为了兴趣而开发, 仅供学习交流使用, 无任何商业用途.
+ 资源版权仍归原网站或其作者所有.
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><project version=\"4\">\r\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_23\" default=\"true\" project-jdk-name=\"23\" project-jdk-type=\"JavaSDK\">\r\n    <output url=\"file://$PROJECT_DIR$/build/classes\" />\r\n  </component>\r\n  <component name=\"ProjectType\">\r\n    <option name=\"id\" value=\"Android\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision e6abcd3e1fa63735682bfc7a79c080483a82e142)
++++ b/.idea/misc.xml	(date 1751872420633)
+@@ -1,5 +1,7 @@
++<?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" default="true" project-jdk-name="23" project-jdk-type="JavaSDK">
++  <component name="ExternalStorageConfigurationManager" enabled="true" />
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_24" default="true" project-jdk-name="24" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/build/classes" />
+   </component>
+   <component name="ProjectType">
+Index: gradle/wrapper/gradle-wrapper.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#Wed Feb 19 14:13:54 CST 2025\r\ndistributionBase=GRADLE_USER_HOME\r\ndistributionPath=wrapper/dists\r\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-rc-1-bin.zip\r\nzipStoreBase=GRADLE_USER_HOME\r\nzipStorePath=wrapper/dists\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/gradle/wrapper/gradle-wrapper.properties b/gradle/wrapper/gradle-wrapper.properties
+--- a/gradle/wrapper/gradle-wrapper.properties	(revision e6abcd3e1fa63735682bfc7a79c080483a82e142)
++++ b/gradle/wrapper/gradle-wrapper.properties	(date 1751872059439)
+@@ -1,6 +1,6 @@
+ #Wed Feb 19 14:13:54 CST 2025
+ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-rc-1-bin.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-8.13-bin.zip
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"CompilerConfiguration\">\r\n    <bytecodeTargetLevel target=\"23\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+--- a/.idea/compiler.xml	(revision e6abcd3e1fa63735682bfc7a79c080483a82e142)
++++ b/.idea/compiler.xml	(date 1751872476948)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="CompilerConfiguration">
+-    <bytecodeTargetLevel target="23" />
++    <bytecodeTargetLevel target="24" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: .idea/gradle.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"GradleMigrationSettings\" migrationVersion=\"1\" />\r\n  <component name=\"GradleSettings\">\r\n    <option name=\"linkedExternalProjectsSettings\">\r\n      <GradleProjectSettings>\r\n        <option name=\"testRunner\" value=\"CHOOSE_PER_TEST\" />\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"gradleJvm\" value=\"23\" />\r\n        <option name=\"modules\">\r\n          <set>\r\n            <option value=\"$PROJECT_DIR$\" />\r\n            <option value=\"$PROJECT_DIR$/app\" />\r\n          </set>\r\n        </option>\r\n        <option name=\"resolveExternalAnnotations\" value=\"false\" />\r\n      </GradleProjectSettings>\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+--- a/.idea/gradle.xml	(revision e6abcd3e1fa63735682bfc7a79c080483a82e142)
++++ b/.idea/gradle.xml	(date 1751872246338)
+@@ -6,14 +6,13 @@
+       <GradleProjectSettings>
+         <option name="testRunner" value="CHOOSE_PER_TEST" />
+         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+-        <option name="gradleJvm" value="23" />
++        <option name="gradleJvm" value="24" />
+         <option name="modules">
+           <set>
+             <option value="$PROJECT_DIR$" />
+             <option value="$PROJECT_DIR$/app" />
+           </set>
+         </option>
+-        <option name="resolveExternalAnnotations" value="false" />
+       </GradleProjectSettings>
+     </option>
+   </component>
+Index: gradle/libs.versions.toml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>[versions]\r\nagp = \"8.8.2\"\r\nkotlin = \"2.1.10\"\r\ncoreKtx = \"1.15.0\"\r\njunit = \"4.13.2\"\r\njunitVersion = \"1.2.1\"\r\nespressoCore = \"3.6.1\"\r\nkotlinxSerializationJson = \"1.6.3\"\r\nlifecycleRuntimeKtx = \"2.8.7\"\r\nactivityCompose = \"1.10.1\"\r\ncomposeBom = \"2025.02.00\"\r\ncompose = \"1.7.8\"\r\nnavigation-compose = \"2.8.8\"\r\ndatastore = \"1.1.3\"\r\ndatastore-preferences = \"1.1.3\"\r\nroom = \"2.6.1\"\r\nandroidx-viewpager2 = \"1.1.0\"\r\ngson = \"2.12.1\"\r\npaging = \"3.3.6\"\r\nandroidx-paging = \"3.3.6\"\r\ncoil = \"2.7.0\"\r\ncompose-foundation = \"1.7.8\"\r\nmaterial3 = \"1.3.1\"\r\nkuromoji = \"0.9.0\"\r\npinyin4j = \"2.5.1\"\r\n\r\n[libraries]\r\n# ──────────────── 基础依赖 ────────────────\r\nandroidx-core-ktx = { group = \"androidx.core\", name = \"core-ktx\", version.ref = \"coreKtx\" }\r\nandroidx-lifecycle-runtime-ktx = { group = \"androidx.lifecycle\", name = \"lifecycle-runtime-ktx\", version.ref = \"lifecycleRuntimeKtx\" }\r\nkuromoji-ipadic = { module = \"com.atilika.kuromoji:kuromoji-ipadic\", version.ref = \"kuromoji\" }\r\npinyin4j = { module = \"com.belerweb:pinyin4j\", version.ref = \"pinyin4j\" }\r\n\r\n#──────────────── 测试相关 ────────────────\r\njunit = { group = \"junit\", name = \"junit\", version.ref = \"junit\" }\r\nandroidx-junit = { group = \"androidx.test.ext\", name = \"junit\", version.ref = \"junitVersion\" }\r\nandroidx-espresso-core = { group = \"androidx.test.espresso\", name = \"espresso-core\", version.ref = \"espressoCore\" }\r\nandroidx-ui-test-manifest = { group = \"androidx.compose.ui\", name = \"ui-test-manifest\" }\r\nandroidx-ui-test-junit4 = { group = \"androidx.compose.ui\", name = \"ui-test-junit4\" }\r\n\r\n#──────────────── Jetpack Compose 相关 ────────────────\r\nandroidx-activity-compose = { group = \"androidx.activity\", name = \"activity-compose\", version.ref = \"activityCompose\" }\r\nandroidx-compose-bom = { group = \"androidx.compose\", name = \"compose-bom\", version.ref = \"composeBom\" }\r\nandroidx-navigation-compose = { group = \"androidx.navigation\", name = \"navigation-compose\", version.ref = \"navigation-compose\" }\r\nandroidx-viewmodel-compose = { group = \"androidx.lifecycle\", name = \"lifecycle-viewmodel-compose\" }\r\nandroidx-lifecycle-viewmodel-compose = { group = \"androidx.lifecycle\", name = \"lifecycle-viewmodel-compose\"  }\r\nandroidx-compose-foundation = { group = \"androidx.compose.foundation\", name = \"foundation\", version.ref = \"compose-foundation\" }\r\n\r\n#──────────────── 数据存储 ────────────────\r\nandroidx-datastore = { group = \"androidx.datastore\", name = \"datastore\", version.ref = \"datastore\" }\r\nandroidx-datastore-preferences = { group = \"androidx.datastore\", name = \"datastore-preferences\", version.ref = \"datastore-preferences\" }\r\nandroidx-room-runtime = { group = \"androidx.room\", name = \"room-runtime\", version.ref = \"room\" }\r\nandroidx-room-compiler = { group = \"androidx.room\", name = \"room-compiler\", version.ref = \"room\" }\r\nandroidx-room-ktx = { group = \"androidx.room\", name = \"room-ktx\", version.ref = \"room\" }\r\ngson = { group = \"com.google.code.gson\", name = \"gson\", version.ref = \"gson\" }\r\ncoil-compose = { group = \"io.coil-kt\", name = \"coil-compose\", version.ref = \"coil\" }\r\n\r\n#──────────────── UI相关 ────────────────\r\nandroidx-ui = { group = \"androidx.compose.ui\", name = \"ui\" }\r\nandroidx-ui-graphics = { group = \"androidx.compose.ui\", name = \"ui-graphics\" }\r\nandroidx-ui-tooling = { group = \"androidx.compose.ui\", name = \"ui-tooling\" }\r\nandroidx-ui-tooling-preview = { group = \"androidx.compose.ui\", name = \"ui-tooling-preview\" }\r\nandroidx-material3 = { group = \"androidx.compose.material3\", name = \"material3\", version.ref = \"material3\" }\r\nandroidx-compose-animation = { group = \"androidx.compose.animation\", name = \"animation\", version.ref = \"compose\" }\r\nandroidx-viewpager2 = { group = \"androidx.viewpager2\", name = \"viewpager2\", version.ref = \"androidx-viewpager2\" }\r\nandroidx-paging-compose = { group = \"androidx.paging\", name = \"paging-compose\", version.ref = \"paging\" }\r\nandroidx-paging-runtime = { group = \"androidx.paging\", name = \"paging-runtime-ktx\", version.ref = \"androidx-paging\" }\r\nandroidx-material-icons-extended = { group = \"androidx.compose.material\", name = \"material-icons-extended\", version.ref = \"compose\" }\r\nkotlinx-serialization-json = { module = \"org.jetbrains.kotlinx:kotlinx-serialization-json\", version.ref = \"kotlinxSerializationJson\" }\r\n\r\n\r\n[plugins]\r\nandroid-application = { id = \"com.android.application\", version.ref = \"agp\" }\r\nkotlin-android = { id = \"org.jetbrains.kotlin.android\", version.ref = \"kotlin\" }\r\nkotlin-compose = { id = \"org.jetbrains.kotlin.plugin.compose\", version.ref = \"kotlin\" }\r\nksp = { id = \"com.google.devtools.ksp\", version = \"2.1.10-1.0.30\" }\r\nkotlinx-serialization = { id = \"org.jetbrains.kotlin.plugin.serialization\", version = \"2.1.10\" }\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+--- a/gradle/libs.versions.toml	(revision e6abcd3e1fa63735682bfc7a79c080483a82e142)
++++ b/gradle/libs.versions.toml	(date 1751872059433)
+@@ -1,5 +1,5 @@
+ [versions]
+-agp = "8.8.2"
++agp = "8.11.0"
+ kotlin = "2.1.10"
+ coreKtx = "1.15.0"
+ junit = "4.13.2"
